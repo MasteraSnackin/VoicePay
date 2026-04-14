@@ -103,13 +103,32 @@ flowchart TD
 - `expo-secure-store` — encrypted local key/value store
 - `expo-print` — receipt printing
 
+**Provider Stack** (outer to inner)
+```
+SmartProvider          — phone-frame wrapper for desktop web + ToastManager
+  ContextProvider      — global state (React Context, class component)
+    ContextLoader      — parallel AsyncStorage reads on mount
+      ErrorBoundary    — typed error display with getUserMessage()
+        Stack Router   — Expo Router file-based navigation
+```
+
+**Global State Shape**
+```
+accountId: string           — Hedera account ID (e.g. "0.0.123456")
+balances: number[23]        — parallel array indexed by token position
+usdConversion: number[23]   — USD rate per token (CoinGecko)
+starter: boolean            — true once context initialisation completes
+chatGeneral: Message[]      — DeSmond AI chat history
+```
+
 **Key Data Owned**
-- Local session: Hedera account ID, user nonce/face ID token.
-- UI preferences: theme, last-used token.
+- Local session: Hedera account ID, user nonce/face ID token (SecureStore, encrypted).
+- Cached state: token balances, USD conversion rates (AsyncStorage).
+- 23 supported HTS tokens with CoinGecko price feed IDs.
 
 **Communication**
-- **Expo API Routes** (`/api/*`): HTTP POST for all mutations (create wallet, execute payment, claim rewards, face ID, AI chat).
-- **Hedera Mirror Node REST API**: Direct HTTP GET for balance queries and NFT metadata.
+- **Expo API Routes** (`/api/*`): HTTP POST for all mutations (create wallet, execute payment, claim rewards, face ID, AI chat). All routes validate input and return `{ result, error }` with proper HTTP status codes.
+- **Hedera Mirror Node REST API**: Direct HTTP GET for balance queries, NFT metadata, and transaction counts.
 
 ---
 
@@ -124,6 +143,14 @@ flowchart TD
 - Expo Router API Routes (`+api.js` convention)
 - Node.js runtime (Expo server / EAS hosting)
 - `expo/fetch` — isomorphic fetch
+- `fetchWithRetries` — exponential backoff (3 retries, 2x backoff, 10 s timeout, 15 s max delay, 10 % jitter) used by Face ID routes
+
+**Error Handling**
+- All routes wrap `request.json()` in try-catch (400 on malformed JSON).
+- Required fields are validated before forwarding (400 on missing fields).
+- Upstream failures return 502 with descriptive error string.
+- Consistent response shape: `{ result: T | null, error: string | null }`.
+- All internal helpers use native `async/await` (no Promise constructor antipattern).
 
 **Endpoints**
 
@@ -238,19 +265,30 @@ flowchart TD
 **Technologies**
 - Node.js + Express
 - LangChain + LangGraph (`@langchain/langgraph`) — state-machine agent with `MessagesAnnotation` and `MemorySaver`
-- `@langchain/ollama` + Ollama local runtime — `llama3.1:8b` model
+- `@langchain/ollama` + Ollama local runtime — `llama3.1:8b` model (temperature 0.1, 25 600 token context)
 - `@langchain/community/tools/duckduckgo_search`
 - `@hashgraph/sdk` — `AccountBalanceQuery` for live balance reads
 - `zod` — tool input schema validation
 
+**Agent Tools**
+
+| Tool | Description |
+|---|---|
+| `get_balance_hedera` | Query token balance on Hedera Mainnet |
+| `transfer_tokens` | Create token transfer transactions |
+| `fund_metamask_card` | Convert USDC Hedera to USDC Linea |
+| `list_of_tools` | Describe available agent capabilities |
+| `fallback` | Friendly greeting / catch-all responses |
+
 **Key Data Owned**
-- Ephemeral per-session conversation history (in-memory `MemorySaver`, keyed by UUID).
+- Ephemeral per-session conversation history (in-memory `MemorySaver`, keyed by UUID thread ID).
+- Keep-alive: 24 hours per session.
 
 **Communication**
-- Receives JSON chat payloads from the Expo proxy.
+- Receives JSON chat payloads from the Expo proxy (authenticated via `X-API-Key` header).
 - Queries **Hedera Mainnet** via Hedera SDK for balance data.
 - Optionally calls external payment Lambda endpoints to execute transactions.
-- Responds with markdown-formatted assistant messages.
+- Responds with markdown-formatted assistant messages and `last_tool` metadata.
 
 ---
 
@@ -446,7 +484,9 @@ All secrets are managed via a `.env` file on the Expo server (never bundled into
 - **Expo API Routes proxy**: stateless; can be horizontally scaled behind EAS edge hosting or a CDN.
 - **AI Agent**: currently single-instance Express process. For production scale, the agent should be containerised (Docker) and deployed behind a load balancer. LangGraph `MemorySaver` should be replaced with a Redis-backed checkpoint store for multi-instance deployments.
 - **Mirror Node queries**: direct from the client, offloading read traffic from the backend entirely.
-- **Retry logic**: Expo API Routes proxy resolves to `null` on network failure; the client surfaces a user-facing error without crashing.
+- **Retry logic**: `fetchWithRetries` provides exponential backoff with jitter for Face ID routes; all other routes use native async/await with null fallback. The client surfaces user-facing errors via typed error classes (`NetworkError`, `TransactionError`, `AuthError`) and Toast notifications without crashing.
+- **NFT parallel fetching**: The `EVMChain.getNFTs()` adapter uses three-phase `Promise.all` (token IDs, URIs, metadata) instead of serial iteration, reducing NFT load time from O(n x D) to O(D) where D is single-fetch latency.
+- **Error boundaries**: React `ErrorBoundary` component wraps the route stack, catching unhandled render errors and displaying a typed, user-friendly recovery screen.
 
 ---
 
@@ -490,9 +530,10 @@ All secrets are managed via a `.env` file on the Expo server (never bundled into
 | **Rekognition Lambda** | Verbose step-by-step logging at each stage (image decode, search, index) with request path, image size, and match confidence. |
 | **Transaction Lambda** | Logs execution errors with full `Object.getOwnPropertyNames` serialisation for debugging. |
 | **AI Agent** | Express server logs per-request; LangGraph traces tool calls to stdout. |
-| **Client** | React Native error boundaries + `toastify-react-native` for user-visible feedback; `console.log` forwarded to Metro / Expo dev tools in development. |
-| **Metrics** | <ADD DETAIL HERE: AWS CloudWatch custom metrics, X-Ray tracing, or a third-party APM (e.g., Datadog, Sentry) are not yet configured> |
-| **Alerting** | <ADD DETAIL HERE: CloudWatch Alarms or PagerDuty integration not yet configured> |
+| **Client** | React `ErrorBoundary` with `getUserMessage()` for typed error display; `toastify-react-native` for transient feedback; zero `console.log` calls in production screens (all removed during quality protocol). |
+| **Typed Errors** | Custom error hierarchy in `core/errors.js`: `AppError` base class with `NetworkError`, `ApiError`, `ValidationError`, `AuthError`, `TransactionError` subtypes. Each carries `code`, `userMessage`, `details`, and `timestamp`. `getUserMessage()` extracts user-friendly text from any error. |
+| **Metrics** | Not yet configured. Recommended: AWS CloudWatch custom metrics + X-Ray tracing for Lambda, Sentry for client-side crash reporting. |
+| **Alerting** | Not yet configured. Recommended: CloudWatch Alarms on Lambda error rates and DynamoDB throttling. |
 
 ---
 
@@ -522,3 +563,6 @@ All secrets are managed via a `.env` file on the Expo server (never bundled into
 - **Push notifications** — integrate Expo Notifications to alert users of incoming payments detected via Hedera Mirror Node webhooks or polling.
 - **Fee delegation / gasless UX** — explore Hedera's scheduled transactions or a relayer pattern to abstract HBAR fees from end-users.
 - **Formal security audit** — commission a third-party penetration test of the Lambda APIs, KMS signing path, and biometric flow before large-scale production rollout.
+- **Fixed-point arithmetic** — replace floating-point balance calculations (`epsilonRound`) with a library like `Decimal.js` to eliminate sub-cent rounding errors in multi-token wallets.
+- **Circuit breaker pattern** — add circuit breaker middleware to Expo API Routes to prevent cascading failures when upstream Lambda functions are degraded.
+- **Functional component migration** — convert remaining class components (Tab1, Tab2) to functional components with hooks for cleaner lifecycle management and reduced bundle size.
