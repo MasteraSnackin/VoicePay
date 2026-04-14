@@ -249,6 +249,8 @@ class Tab1 extends Component {
             alignItems: "center",
             width: "110%",
             marginTop: 20,
+            paddingVertical: 24,
+            borderRadius: 20,
           }}
           colors={["#000000", "#0a0a0a", "#1a1a1a", "#0a0a0a", "#000000"]}
         >
@@ -331,7 +333,7 @@ class Tab1 extends Component {
           </Pressable>
         </View>
         {this.state.selector === 0 && (
-          <Fragment>
+          <View style={{ width: "100%", gap: 8 }}>
             {this.state.refreshing && this.context.value.balances.every(b => b === 0) ? (
               <TokenListSkeleton count={5} />
             ) : blockchain.tokens.map((token, i) => (
@@ -390,7 +392,7 @@ class Tab1 extends Component {
                 </View>
               </View>
             ))}
-          </Fragment>
+          </View>
         )}
         {this.state.selector === 1 && (
           <Fragment>

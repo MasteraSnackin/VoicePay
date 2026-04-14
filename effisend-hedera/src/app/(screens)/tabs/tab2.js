@@ -310,7 +310,14 @@ class Tab2 extends Component {
         {this.state.stage === 0 && (
           <Fragment>
             <Text style={GlobalStyles.title}>Enter Amount (USD)</Text>
-            <Text style={{ fontSize: fontSizeTokens.display, color: "white" }}>
+            <Text style={{
+              fontSize: fontSizeTokens.display,
+              color: "white",
+              fontFamily: "Exo2_700Bold",
+              textShadowColor: "rgba(66, 134, 245, 0.35)",
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 12,
+            }}>
               {deleteLeadingZeros(formatInputText(this.state.amount))}
             </Text>
             <VirtualKeyboard
@@ -324,8 +331,8 @@ class Tab2 extends Component {
                 height: normalizeFontSize(50),
                 borderWidth: 1,
                 borderColor: rgbaToHex(255, 255, 255, 20),
-                borderRadius: 5,
-                margin: 3,
+                borderRadius: 10,
+                margin: 4,
               }}
               rowStyle={{
                 width: "100%",
@@ -404,9 +411,15 @@ class Tab2 extends Component {
                 width: "90%",
                 marginVertical: 20,
                 borderColor: this.state.loading ? mainColor : secondaryColor,
-                borderWidth: 5,
-                borderRadius: 10,
+                borderWidth: 3,
+                borderRadius: 16,
                 aspectRatio: 1,
+                overflow: "hidden",
+                shadowColor: this.state.loading ? mainColor : secondaryColor,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 6,
               }}
             >
               <CamQR
@@ -450,8 +463,8 @@ class Tab2 extends Component {
                 $ {deleteLeadingZeros(formatInputText(this.state.amount))}
               </Text>
             </View>
-            <View>
-              <Text style={{ color: "white", fontSize: 28 }}>FaceID</Text>
+            <View style={{ alignItems: "center" }}>
+              <Text style={GlobalStyles.title}>FaceID</Text>
             </View>
             <View
               style={{
@@ -459,9 +472,15 @@ class Tab2 extends Component {
                 width: "90%",
                 marginVertical: 20,
                 borderColor: this.state.loading ? mainColor : secondaryColor,
-                borderWidth: 5,
-                borderRadius: 10,
+                borderWidth: 3,
+                borderRadius: 16,
                 aspectRatio: 1,
+                overflow: "hidden",
+                shadowColor: this.state.loading ? mainColor : secondaryColor,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 6,
               }}
             >
               <CamFace
