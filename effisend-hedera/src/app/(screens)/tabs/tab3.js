@@ -66,20 +66,17 @@ export default function Tab3() {
   const [loading, setLoading] = React.useState(false);
 
   const getNonceForAccountId = useCallback(async () => {
-    return new Promise((resolve) => {
-      const requestOptions = {
-        method: "GET",
-        redirect: "follow",
-      };
-
-      fetch(
-        `https://mainnet.mirrornode.hedera.com/api/v1/transactions?account.id=${context.value.accountId}`,
-        requestOptions
-      )
-        .then((response) => response.json())
-        .then((result) => resolve(result.transactions.length))
-        .catch(() => resolve(0));
-    });
+    try {
+      // Request up to 100 transactions to get an accurate activity count
+      // (default page size is 25, which undercounts active users)
+      const response = await fetch(
+        `https://mainnet.mirrornode.hedera.com/api/v1/transactions?account.id=${context.value.accountId}&limit=100&order=desc`
+      );
+      const result = await response.json();
+      return result.transactions?.length ?? 0;
+    } catch {
+      return 0;
+    }
   }, [context]);
 
   const getRewards = useCallback(async () => {

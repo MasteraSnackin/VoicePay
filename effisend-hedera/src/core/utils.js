@@ -173,9 +173,14 @@ export function formatInputText(inputText, decimalPlaces = 2) {
 }
 
 export function deleteLeadingZeros(string) {
-  let number = parseFloat(string);
-  let formattedString = number.toFixed(2).toString();
-  return formattedString;
+  if (!string || string === "") return "0.00";
+  // Strip leading zeros while preserving the number's value and decimal precision
+  const num = parseFloat(string);
+  if (isNaN(num)) return "0.00";
+  // Preserve original decimal places if more than 2, otherwise default to 2
+  const parts = string.split(".");
+  const decimals = parts[1] ? Math.max(parts[1].length, 2) : 2;
+  return num.toFixed(decimals);
 }
 
 export function rgbaToHex(r, g, b, alphaPercent) {

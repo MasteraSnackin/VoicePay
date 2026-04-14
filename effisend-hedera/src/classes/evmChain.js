@@ -24,7 +24,7 @@ export class EVMChain {
     /**
      * Retrieve NFTs owned by `owner` from an ERC‑721 contract.
      * Returns an array of objects with at least `{ tokenId, contract, image, name, description, attributes }`.
-     * Errors are caught and result in an empty array so the UI remains stable.
+     * Fetches token IDs and metadata in parallel for O(D) latency instead of O(n×D).
      */
     async getNFTs(owner, contractAddress) {
         if (!owner || !contractAddress) return [];
@@ -37,31 +37,48 @@ export class EVMChain {
             const contract = new ethers.Contract(contractAddress, abi, this.provider);
             const balBN = await contract.balanceOf(owner);
             const balance = Number(balBN);
-            const nfts = [];
-            for (let i = 0; i < balance; i++) {
-                const tokenIdBN = await contract.tokenOfOwnerByIndex(owner, i);
-                const tokenId = tokenIdBN.toString();
-                let uri = await contract.tokenURI(tokenId);
-                if (uri.startsWith("ipfs://")) {
-                    uri = uri.replace(/^ipfs:\/\//, "https://ipfs.io/ipfs/");
+            if (balance === 0) return [];
+
+            // Phase 1: Fetch all token IDs in parallel
+            const tokenIdPromises = Array.from({ length: balance }, (_, i) =>
+                contract.tokenOfOwnerByIndex(owner, i).then((bn) => bn.toString())
+            );
+            const tokenIds = await Promise.all(tokenIdPromises);
+
+            // Phase 2: Fetch all token URIs in parallel
+            const uriPromises = tokenIds.map((tokenId) =>
+                contract.tokenURI(tokenId).then((uri) =>
+                    uri.startsWith("ipfs://")
+                        ? uri.replace(/^ipfs:\/\//, "https://ipfs.io/ipfs/")
+                        : uri
+                )
+            );
+            const uris = await Promise.all(uriPromises);
+
+            // Phase 3: Fetch all metadata in parallel
+            const metaPromises = uris.map(async (uri, idx) => {
+                try {
+                    const resp = await fetch(uri);
+                    if (!resp.ok) return null;
+                    const meta = await resp.json();
+                    let image = meta.image ?? "";
+                    if (typeof image === "string" && image.startsWith("ipfs://")) {
+                        image = image.replace(/^ipfs:\/\//, "https://ipfs.io/ipfs/");
+                    }
+                    return {
+                        tokenId: tokenIds[idx],
+                        contract: contractAddress,
+                        image,
+                        name: meta.name ?? "",
+                        description: meta.description ?? "",
+                        attributes: meta.attributes ?? [],
+                    };
+                } catch {
+                    return null;
                 }
-                const resp = await fetch(uri);
-                if (!resp.ok) continue;
-                const meta = await resp.json();
-                let image = meta.image ?? "";
-                if (typeof image === "string" && image.startsWith("ipfs://")) {
-                    image = image.replace(/^ipfs:\/\//, "https://ipfs.io/ipfs/");
-                }
-                nfts.push({
-                    tokenId,
-                    contract: contractAddress,
-                    image,
-                    name: meta.name ?? "",
-                    description: meta.description ?? "",
-                    attributes: meta.attributes ?? [],
-                });
-            }
-            return nfts;
+            });
+            const results = await Promise.all(metaPromises);
+            return results.filter(Boolean);
         } catch (e) {
             console.warn("EVMChain.getNFTs error", e);
             return [];

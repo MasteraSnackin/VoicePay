@@ -127,23 +127,16 @@ class Tab1 extends Component {
   }
 
   hederaGetBalance = async () => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      accountId: this.context.value.accountId,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/hederaGetBalance`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve({ result: null, error: "BAD REQUEST" }));
-    });
+    try {
+      const response = await fetch(`/api/hederaGetBalance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: this.context.value.accountId }),
+      });
+      return await response.json();
+    } catch {
+      return { result: null, error: "BAD REQUEST" };
+    }
   };
 
   async getBalance() {
@@ -167,25 +160,18 @@ class Tab1 extends Component {
   }
 
   async createPayment(tempNonce) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const tempUser = await getEncryptedStorageValue("user");
-    const raw = JSON.stringify({
-      nonce: tempNonce,
-      user: tempUser,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/createPayment`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result.result))
-        .catch(() => resolve(null));
-    });
+    try {
+      const tempUser = await getEncryptedStorageValue("user");
+      const response = await fetch(`/api/createPayment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nonce: tempNonce, user: tempUser }),
+      });
+      const data = await response.json();
+      return data.result;
+    } catch {
+      return null;
+    }
   }
 
   async createQR() {

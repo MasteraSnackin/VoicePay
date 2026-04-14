@@ -86,30 +86,26 @@ class Tab2 extends Component {
   }
 
   async encryptData(data) {
-    return new Promise((resolve, reject) => {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-
-      const raw = JSON.stringify({
-        data,
-      });
-
-      const requestOptions = {
+    try {
+      const response = await fetch(`/api/encrypt`, {
         method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      fetch(`/api/encrypt`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve(null));
-    });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data }),
+      });
+      return await response.json();
+    } catch {
+      return null;
+    }
   }
 
   printURL() {
-    const url = `/receipt?kindPayment=${this.state.kindPayment}&amount=${this.state.transactionDisplay.amount}&name=${this.state.transactionDisplay.name}&hash=${this.state.hash}`;
+    const params = new URLSearchParams({
+      kindPayment: String(this.state.kindPayment),
+      amount: String(this.state.transactionDisplay.amount),
+      name: String(this.state.transactionDisplay.name),
+      hash: String(this.state.hash),
+    });
+    const url = `/receipt?${params.toString()}`;
     if (typeof window !== "undefined" && window.open) {
       window.open(url, "_blank");
     } else {
@@ -128,73 +124,52 @@ class Tab2 extends Component {
   }
 
   async payFromAnySource(i) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      user: this.state.user,
-      id: i,
-      amount: (this.state.amount / this.context.value.usdConversion[i]).toFixed(
-        blockchain.tokens[i].decimals
-      ),
-      to: this.context.value.accountId,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    fetch(`/api/executePayment`, requestOptions)
-      .then((response) => response.json())
-      .then(async (result) => {
-        if (!this._isMounted) return;
-        if (result.error === null && result.result) {
-          await this.setStateAsync({
-            status: "Confirmed",
-            loading: false,
-            explorerURL: `${blockchain.blockExplorer}transaction/${result.result.hash}`,
-            hash: result.result.hash,
-          });
-          Toast.success("Payment completed successfully");
-        } else {
-          await this.setStateAsync({ loading: false });
-          Toast.error(getUserMessage(new TransactionError("Payment rejected by server")));
-        }
-      })
-      .catch(async () => {
-        if (!this._isMounted) return;
-        await this.setStateAsync({ loading: false });
-        Toast.error(getUserMessage(new NetworkError()));
+    try {
+      const response = await fetch(`/api/executePayment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user: this.state.user,
+          id: i,
+          amount: (this.state.amount / this.context.value.usdConversion[i]).toFixed(
+            blockchain.tokens[i].decimals
+          ),
+          to: this.context.value.accountId,
+        }),
       });
+      const result = await response.json();
+      if (!this._isMounted) return;
+      if (result.error === null && result.result) {
+        await this.setStateAsync({
+          status: "Confirmed",
+          loading: false,
+          explorerURL: `${blockchain.blockExplorer}transaction/${result.result.hash}`,
+          hash: result.result.hash,
+        });
+        Toast.success("Payment completed successfully");
+      } else {
+        await this.setStateAsync({ loading: false });
+        Toast.error(getUserMessage(new TransactionError("Payment rejected by server")));
+      }
+    } catch {
+      if (!this._isMounted) return;
+      await this.setStateAsync({ loading: false });
+      Toast.error(getUserMessage(new NetworkError()));
+    }
   }
 
   async fetchPayment(kind, data) {
-    let raw;
-    if (kind === 0) {
-      raw = JSON.stringify({
-        nonce: data,
-      });
-    } else if (kind === 1) {
-      raw = JSON.stringify({
-        user: data,
-      });
-    }
-    return new Promise((resolve, reject) => {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-
-      const requestOptions = {
+    const body = kind === 0 ? { nonce: data } : { user: data };
+    try {
+      const response = await fetch("/api/fetchPayment", {
         method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      fetch("/api/fetchPayment", requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve({ result: null, error: "NETWORK_ERROR" }));
-    });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return await response.json();
+    } catch {
+      return { result: null, error: "NETWORK_ERROR" };
+    }
   }
 
   async getUSD() {
@@ -218,23 +193,16 @@ class Tab2 extends Component {
   }
 
   hederaGetBalance = async () => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      accountId: this.state.accountId,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/hederaGetBalance`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve({ result: null, error: "BAD REQUEST" }));
-    });
+    try {
+      const response = await fetch(`/api/hederaGetBalance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: this.state.accountId }),
+      });
+      return await response.json();
+    } catch {
+      return { result: null, error: "BAD REQUEST" };
+    }
   };
 
   async getBalances() {
@@ -266,23 +234,16 @@ class Tab2 extends Component {
   }
 
   async fetchFaceID(image) {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      image,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/fetchFaceID`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve(null));
-    });
+    try {
+      const response = await fetch(`/api/fetchFaceID`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image }),
+      });
+      return await response.json();
+    } catch {
+      return null;
+    }
   }
 
   // Utils
