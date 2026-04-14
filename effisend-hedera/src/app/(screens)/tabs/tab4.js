@@ -78,20 +78,17 @@ export default function Tab4() {
       time: Date.now(),
       tool: "",
     });
-    await context.setValueAsync({
-      chatGeneral: temp,
-    });
-    scrollView.current.scrollToEnd({ animated: true });
+    await context.setValueAsync({ chatGeneral: temp });
+    scrollView.current?.scrollToEnd({ animated: true });
     // Optimistic: show thinking indicator while waiting
-    const thinkingMsg = {
+    const tempWithThinking = [...temp, {
       message: "Thinking...",
       type: "system",
       time: Date.now(),
       tool: "",
       isThinking: true,
-    };
-    const tempWithThinking = [...temp, thinkingMsg];
-    context.setValue({ chatGeneral: tempWithThinking });
+    }];
+    await context.setValueAsync({ chatGeneral: tempWithThinking });
     setTimeout(() => scrollView.current?.scrollToEnd({ animated: true }), 50);
     const response = await chatWithAgent(userMessage);
     if (!response || response.error) {
@@ -111,11 +108,9 @@ export default function Tab4() {
         tool: response["last_tool"],
       });
     }
-    context.setValue({
-      chatGeneral: temp,
-    });
+    await context.setValueAsync({ chatGeneral: temp });
     setLoading(false);
-    setTimeout(() => scrollView.current.scrollToEnd({ animated: true }), 100);
+    setTimeout(() => scrollView.current?.scrollToEnd({ animated: true }), 100);
   }, [scrollView, context, message, setMessage, setLoading, chatWithAgent]);
   
   return (

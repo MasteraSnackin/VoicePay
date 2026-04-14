@@ -3,19 +3,18 @@ import { fetch } from "expo/fetch";
 async function createOrFetchWallet(body) {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  const raw = JSON.stringify(body);
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-  };
-  return new Promise((resolve) => {
-    fetch(`${process.env.CREATE_OR_FETCH_WALLET_API}`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => resolve(result))
-      .catch(() => resolve(null));
-  });
+  try {
+    const response = await fetch(`${process.env.CREATE_OR_FETCH_WALLET_API}`, {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(body),
+      redirect: "follow",
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request) {
@@ -29,7 +28,7 @@ export async function POST(request) {
       return Response.json({ result: null, error: "Wallet creation failed" }, { status: 502 });
     }
     return Response.json({ result: response.result ?? null, error: null });
-  } catch (_e) {
+  } catch {
     return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
   }
 }

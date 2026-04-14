@@ -5,20 +5,26 @@ import { getAsyncStorageValue } from "../core/utils";
 export default function ContextLoader() {
   const context = useContext(ContextModule);
   const checkStarter = useCallback(async () => {
-    const accountId = await getAsyncStorageValue("accountId");
-    if (accountId === null) {
-      context.setValue({
-        starter: true,
-      });
-    } else {
-      const balances = await getAsyncStorageValue("balances");
-      const usdConversion = await getAsyncStorageValue("usdConversion");
-      context.setValue({
-        accountId: accountId ?? context.value.accountId,
-        balances: balances ?? context.value.balances,
-        usdConversion: usdConversion ?? context.value.usdConversion,
-        starter: true,
-      });
+    try {
+      // Batch all reads in parallel instead of sequential
+      const [accountId, balances, usdConversion] = await Promise.all([
+        getAsyncStorageValue("accountId"),
+        getAsyncStorageValue("balances"),
+        getAsyncStorageValue("usdConversion"),
+      ]);
+      if (accountId === null) {
+        context.setValue({ starter: true });
+      } else {
+        context.setValue({
+          accountId: accountId ?? context.value.accountId,
+          balances: balances ?? context.value.balances,
+          usdConversion: usdConversion ?? context.value.usdConversion,
+          starter: true,
+        });
+      }
+    } catch {
+      // Storage read failed — start fresh
+      context.setValue({ starter: true });
     }
   }, [context]);
 

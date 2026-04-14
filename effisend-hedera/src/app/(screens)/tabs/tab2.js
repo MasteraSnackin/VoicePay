@@ -431,8 +431,7 @@ class Tab2 extends Component {
                       result: { accountId, user },
                     } = await this.fetchPayment(0, nonce);
                     await this.setStateAsync({ accountId, user });
-                    await this.getUSD();
-                    await this.getBalances();
+                    await Promise.all([this.getUSD(), this.getBalances()]);
                     await this.setStateAsync({
                       loading: false,
                       stage: 2,
@@ -498,8 +497,7 @@ class Tab2 extends Component {
                       result: { accountId },
                     } = await this.fetchPayment(1, user);
                     await this.setStateAsync({ accountId, user });
-                    await this.getUSD();
-                    await this.getBalances();
+                    await Promise.all([this.getUSD(), this.getBalances()]);
                     await this.setStateAsync({
                       loading: false,
                       stage: 2,

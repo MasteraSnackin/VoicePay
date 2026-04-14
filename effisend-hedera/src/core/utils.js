@@ -5,43 +5,36 @@ import { Dimensions, PixelRatio, Platform } from "react-native";
 export async function getAsyncStorageValue(label) {
   try {
     const session = await AsyncStorage.getItem("General");
-    if (label in JSON.parse(session)) {
-      return JSON.parse(session)[label];
-    } else {
-      return null;
-    }
+    if (!session) return null;
+    const parsed = JSON.parse(session);
+    return parsed[label] ?? null;
   } catch {
     return null;
   }
 }
 
 export async function setAsyncStorageValue(value) {
-  const session = await AsyncStorage.getItem("General");
-  await AsyncStorage.setItem(
-    "General",
-    JSON.stringify({
-      ...JSON.parse(session),
-      ...value,
-    })
-  );
+  try {
+    const session = await AsyncStorage.getItem("General");
+    const current = session ? JSON.parse(session) : {};
+    await AsyncStorage.setItem("General", JSON.stringify({ ...current, ...value }));
+  } catch {
+    // Storage write failed — non-critical, app continues with in-memory state
+  }
 }
 
 export async function getEncryptedStorageValue(label) {
   try {
     const session = await EncryptedStorage.getItem("General");
-    if (label in JSON.parse(session)) {
-      return JSON.parse(session)[label];
-    } else {
-      return null;
-    }
+    if (!session) throw new Error("No encrypted session");
+    const parsed = JSON.parse(session);
+    return parsed[label] ?? null;
   } catch {
     try {
       const session = await AsyncStorage.getItem("GeneralBackup");
-      if (label in JSON.parse(session)) {
-        return JSON.parse(session)[label];
-      } else {
-        return null;
-      }
+      if (!session) return null;
+      const parsed = JSON.parse(session);
+      return parsed[label] ?? null;
     } catch {
       return null;
     }
@@ -51,22 +44,16 @@ export async function getEncryptedStorageValue(label) {
 export async function setEncryptedStorageValue(value) {
   try {
     const session = await EncryptedStorage.getItem("General");
-    await EncryptedStorage.setItem(
-      "General",
-      JSON.stringify({
-        ...JSON.parse(session),
-        ...value,
-      })
-    );
+    const current = session ? JSON.parse(session) : {};
+    await EncryptedStorage.setItem("General", JSON.stringify({ ...current, ...value }));
   } catch {
-    const session = await AsyncStorage.getItem("GeneralBackup");
-    await AsyncStorage.setItem(
-      "GeneralBackup",
-      JSON.stringify({
-        ...JSON.parse(session),
-        ...value,
-      })
-    );
+    try {
+      const session = await AsyncStorage.getItem("GeneralBackup");
+      const current = session ? JSON.parse(session) : {};
+      await AsyncStorage.setItem("GeneralBackup", JSON.stringify({ ...current, ...value }));
+    } catch {
+      // Both storage backends failed — non-critical
+    }
   }
 }
 

@@ -3,19 +3,18 @@ import { fetch } from "expo/fetch";
 async function fetchPayment(jsonBody) {
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  const raw = JSON.stringify(jsonBody);
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-  };
-  return new Promise((resolve) => {
-    fetch(`${process.env.FETCH_PAYMENT_URL_API}`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => resolve(result))
-      .catch(() => resolve(null));
-  });
+  try {
+    const response = await fetch(`${process.env.FETCH_PAYMENT_URL_API}`, {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(jsonBody),
+      redirect: "follow",
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request) {
@@ -29,7 +28,7 @@ export async function POST(request) {
       return Response.json({ result: null, error: "Payment fetch failed" }, { status: 502 });
     }
     return Response.json({ result: response.result ?? null, error: null });
-  } catch (_e) {
+  } catch {
     return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
   }
 }

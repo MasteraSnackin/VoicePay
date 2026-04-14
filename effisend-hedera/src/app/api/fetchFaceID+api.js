@@ -4,21 +4,22 @@ async function fetchFaceID(body) {
   const myHeaders = new Headers();
   myHeaders.append("X-API-Key", process.env.AI_URL_API_KEY);
   myHeaders.append("Content-Type", "application/json");
-  const raw = JSON.stringify(body);
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body: raw,
-    redirect: "follow",
-    retry: 3,
-    retryDelay: 3000,
-  };
-  return new Promise((resolve) => {
-    fetchWithRetries(`${process.env.FACEID_API}fetch`, requestOptions)
-      .then((response) => response.json())
-      .then((result) => resolve(result))
-      .catch(() => resolve(null));
-  });
+  try {
+    const response = await fetchWithRetries(
+      `${process.env.FACEID_API}fetch`,
+      {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify(body),
+        redirect: "follow",
+      },
+      { retries: 3, delay: 3000 }
+    );
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request) {
@@ -32,7 +33,7 @@ export async function POST(request) {
       return Response.json({ result: null, error: "Face ID lookup failed" }, { status: 502 });
     }
     return Response.json({ result: response.result ?? null, error: null });
-  } catch (_e) {
+  } catch {
     return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
   }
 }
