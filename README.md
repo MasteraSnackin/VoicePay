@@ -32,8 +32,9 @@ The app provides a full-featured DeFi experience: send/receive HBAR and HTS toke
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Screenshots / Demo](#screenshots--demo)
-- [API / CLI Reference](#api--cli-reference)
+- [API Reference](#api-reference)
 - [Tests](#tests)
+- [Engineering Quality](#engineering-quality)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -43,18 +44,17 @@ The app provides a full-featured DeFi experience: send/receive HBAR and HTS toke
 
 ## Features
 
-- 🔐 **Biometric Wallet Creation** — Create or recover your wallet using Face ID via AWS Rekognition; no seed phrases required.
-- 💸 **Send & Receive HBAR / HTS Tokens** — Transfer native HBAR and Hedera Token Service (HTS) assets with a virtual keyboard UI.
-- 📷 **QR Code Payments** — Generate styled QR codes for receiving payments; scan QR codes with the built-in camera to pay.
-- 🤖 **AI Financial Agent** — Chat with an on-device LangChain + Ollama agent that can query your Hedera balance and assist with payments.
-- 🔑 **AWS KMS Transaction Signing** — Private keys are never exposed; all transactions are signed via AWS KMS ECDSA keys.
-- 🏅 **NFT POAP & Pass Gallery** — View Hedera NFT collections, POAPs, and passes directly in the wallet.
-- 🎁 **Rewards System** — Earn and claim on-chain rewards from within the app.
-- 🌐 **Cross-Platform** — Runs on iOS, Android, and Web (Expo + Metro bundler).
-- 🧾 **Transaction Receipts** — Generate and print payment receipts via the built-in print module.
-- 🌙 **Glassmorphism Dark Theme** — Modern UI with glass surfaces, text glow, shadow elevation, and responsive typography.
-- 🛡️ **Typed Error System** — Custom error hierarchy (NetworkError, AuthError, TransactionError) with user-friendly messages and structured error responses across all API routes.
-- 💀 **Skeleton Loading States** — Animated skeleton placeholders on balance, token list, profile cards, and NFT gallery.
+- **Biometric Wallet Creation** — Create or recover your wallet using Face ID via AWS Rekognition; no seed phrases required.
+- **Send & Receive HBAR / HTS Tokens** — Transfer native HBAR and 24+ Hedera Token Service (HTS) assets with a virtual keyboard UI.
+- **QR Code Payments** — Generate styled QR codes for receiving payments; scan QR codes with the built-in camera to pay.
+- **AI Financial Agent** — Chat with a LangChain + Ollama agent that can query your Hedera balance and assist with payments.
+- **AWS KMS Transaction Signing** — Private keys are never exposed; all transactions are signed via AWS KMS ECDSA keys.
+- **NFT POAP & Pass Gallery** — View Hedera and EVM NFT collections, POAPs, and digital passes with parallel metadata fetching.
+- **Rewards & Trust Score** — Earn and claim on-chain SAUCE rewards; trust score computed from transaction activity on Hedera Mirror Node.
+- **Cross-Platform** — Runs on iOS, Android, and Web (Expo + Metro bundler) with responsive phone-frame mockup on desktop.
+- **Transaction Receipts** — Generate glassmorphism-styled receipts with QR codes linking to the block explorer.
+- **Glassmorphism Dark Theme** — Modern UI with glass surfaces, text glow, shadow elevation, skeleton loading, and responsive typography.
+- **Typed Error System** — Custom error hierarchy (NetworkError, AuthError, TransactionError) with user-friendly messages and structured `{ result, error }` responses across all 11 API routes.
 
 ---
 
@@ -80,11 +80,11 @@ The app provides a full-featured DeFi experience: send/receive HBAR and HTS toke
 
 ```mermaid
 flowchart LR
-  User["📱 Mobile User\n(iOS / Android / Web)"]
+  User["Mobile User\n(iOS / Android / Web)"]
 
   subgraph ExpoApp["EffiSend Hedera App (Expo)"]
-    UI["React Native UI\n(Tabs, Screens)"]
-    APIRoutes["Expo API Routes\n(/api/*)"]
+    UI["React Native UI\n(5 Tabs, 4 Screens)"]
+    APIRoutes["Expo API Routes\n(11 endpoints)"]
   end
 
   subgraph AWS["AWS Cloud"]
@@ -119,14 +119,16 @@ flowchart LR
 
 The **Expo React Native app** serves as both the front-end and a lightweight API layer (via Expo Router API Routes). When a user authenticates, the app calls the backend which uses **AWS Rekognition** to match their face and **DynamoDB** to retrieve their Hedera account. Transactions are submitted to the **Hedera Mainnet** after being signed by **AWS KMS**, ensuring private keys are never exposed client-side. The **AI agent** (LangGraph + Ollama) connects directly to the Hedera network to provide real-time balance and token data during chat sessions.
 
+For a detailed deep-dive, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
 ---
 
 ## Installation
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) ≥ 20.x
-- [npm](https://www.npmjs.com) ≥ 10.x or [Yarn](https://yarnpkg.com)
+- [Node.js](https://nodejs.org) >= 20.x
+- [npm](https://www.npmjs.com) >= 10.x or [Yarn](https://yarnpkg.com)
 - [Expo CLI](https://docs.expo.dev/get-started/installation/) (`npm install -g expo-cli`)
 - [EAS CLI](https://docs.expo.dev/eas/) (`npm install -g eas-cli`) — for builds and deployment
 - An **AWS account** with Rekognition, KMS, and DynamoDB configured
@@ -205,17 +207,19 @@ npx expo export -p web && eas deploy --prod
 
 ### First-time wallet setup
 
-1. Launch the app and tap **Create Wallet**.
+1. Launch the app — the splash screen shows while context loads.
 2. Allow camera permissions — the app captures your face for biometric registration via **AWS Rekognition**.
 3. Your Hedera account is created and linked to your face signature in DynamoDB.
 4. You are redirected to the main dashboard with your **Account ID** and **HBAR balance**.
 
 ### Sending a payment
 
-1. Navigate to the **Send** tab.
-2. Enter the amount and select the token (HBAR or HTS).
-3. Scan the recipient's **QR code** or enter their Hedera Account ID manually.
-4. Confirm and submit — the transaction is signed via **AWS KMS** and broadcast to Hedera Mainnet.
+1. Navigate to the **Charge** tab.
+2. Enter the USD amount using the virtual keyboard.
+3. Choose **Pay with QR** (scan recipient's QR code) or **Pay with FaceID** (capture recipient's face).
+4. Select the token to pay with — only tokens with sufficient balance are shown.
+5. Confirm via the alert dialog — the transaction is signed via **AWS KMS** and broadcast to Hedera Mainnet.
+6. View the result on the block explorer or generate a receipt.
 
 ### Chatting with the AI Agent
 
@@ -259,23 +263,31 @@ COLLECTION_ID=<rekognition-face-collection-id>
 
 ### DynamoDB
 
-Update the `TABLE_NAME` constant in [`amazonkms/transaction.js`](amazonkms/transaction.js:11) to match your DynamoDB table name.
+Update the `TABLE_NAME` constant in [`amazonkms/transaction.js`](amazonkms/transaction.js) to match your DynamoDB table name.
 
 ---
 
 ## Screenshots / Demo
 
-| Wallet Dashboard | Send Payment | AI Agent Chat |
+| Face ID Onboarding | Wallet Dashboard | QR Payment |
 |---|---|---|
-| ![Dashboard](effisend-hedera/src/assets/images/setup.png) | _\<ADD SEND SCREEN SCREENSHOT\>_ | _\<ADD AGENT SCREENSHOT\>_ |
+| ![Face ID](Images/face1.png) | ![Wallet](Images/wallet1.png) | ![Payment](Images/payment1.png) |
 
-> 🔗 **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
+| Payment Flow | AI Agent Chat | NFT Gallery |
+|---|---|---|
+| ![Payment](Images/payment3.png) | ![DeSmond](Images/desmond1.png) | ![NFTs](Images/nft1.png) |
+
+| System Architecture |
+|---|
+| ![Architecture](Images/final.drawio.png) |
+
+> **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
 
 ---
 
-## API / CLI Reference
+## API Reference
 
-The app exposes internal **Expo API Routes** (server-side handlers) under `/api/*`. These are called by the React Native UI and can also be used by the standalone backend.
+The app exposes 11 internal **Expo API Routes** (server-side handlers) under `/api/*`. All endpoints validate input, return consistent `{ result, error }` responses, and use proper HTTP status codes (400 for bad input, 502 for upstream failures).
 
 ### `POST /api/createOrFetchWallet`
 
@@ -293,10 +305,7 @@ Creates a new Hedera wallet or retrieves an existing one linked to the user iden
 
 ```json
 {
-  "result": {
-    "accountId": "0.0.123456",
-    "publicKey": "302a300506..."
-  },
+  "result": { "accountId": "0.0.123456", "user": "face-hash-uuid-string" },
   "error": null
 }
 ```
@@ -312,9 +321,8 @@ Submits a signed Hedera transaction.
 ```json
 {
   "user": "face-hash-uuid-string",
-  "chainType": "hedera",
-  "tokenId": "HBAR",
-  "amount": "5.0",
+  "id": 0,
+  "amount": "5.000000",
   "to": "0.0.99999"
 }
 ```
@@ -339,19 +347,15 @@ Submits a signed Hedera transaction.
 
 ---
 
-### `POST /api/chatWithAgent`
+### `POST /api/hederaGetBalance`
 
-Sends a message to the LangGraph AI agent.
+Queries HBAR and HTS token balances for an account.
 
 **Request**
 
 ```json
 {
-  "message": "What is my HBAR balance?",
-  "context": {
-    "accountId": "0.0.123456",
-    "user": "face-hash-uuid-string"
-  }
+  "accountId": "0.0.123456"
 }
 ```
 
@@ -359,7 +363,32 @@ Sends a message to the LangGraph AI agent.
 
 ```json
 {
-  "result": "Your account 0.0.123456 currently holds 42.38 HBAR.",
+  "result": { "hbar": "42.38", "tokens": { "0.0.456": { "low": 1000000 } } },
+  "error": null
+}
+```
+
+---
+
+### `POST /api/chatWithAgent`
+
+Sends a message to the LangGraph AI agent with account context.
+
+**Request**
+
+```json
+{
+  "message": "What is my HBAR balance?",
+  "context": { "accountId": "0.0.123456", "user": "face-hash-uuid-string" }
+}
+```
+
+**Response**
+
+```json
+{
+  "message": "Your account 0.0.123456 currently holds 42.38 HBAR.",
+  "last_tool": "get_balance",
   "error": null
 }
 ```
@@ -368,8 +397,6 @@ Sends a message to the LangGraph AI agent.
 
 ## Tests
 
-> **Note:** The project uses lint-based verification and manual QA. An automated test suite is on the roadmap.
-
 ### Lint
 
 ```bash
@@ -377,7 +404,7 @@ cd effisend-hedera
 npm run lint
 ```
 
-This runs ESLint with the [Expo ESLint config](effisend-hedera/eslint.config.js). Current status: **0 errors, 4 warnings** (all pre-existing `import/no-named-as-default-member` style warnings).
+Runs ESLint with the [Expo ESLint config](effisend-hedera/eslint.config.js). Current status: **0 errors, 4 warnings** (all pre-existing `import/no-named-as-default-member` style warnings).
 
 ### Build Verification
 
@@ -393,10 +420,11 @@ Compiles all 11 static routes and 11 API routes. Current status: **passes clean*
 - [ ] Wallet creation via Face ID completes successfully.
 - [ ] HBAR balance loads on the dashboard.
 - [ ] QR code scanning triggers payment flow.
+- [ ] Cancel buttons work on all payment stages.
 - [ ] AI agent responds with correct account balance.
-- [ ] Transaction receipt prints without errors.
-
-> 🚧 **Roadmap item:** Add Jest + React Native Testing Library unit tests and integration tests against a Hedera testnet environment.
+- [ ] Transaction receipt renders with dark theme and glassmorphism card.
+- [ ] NFT gallery loads passes from Hedera Mirror Node.
+- [ ] Trust score and rewards display on EffiSend ID tab.
 
 ---
 
@@ -426,6 +454,8 @@ The codebase has been through 7 systematic engineering protocol passes:
 - [ ] **EVM sidechain support** — Extend the `EVMChain` adapter to additional networks (e.g., Ethereum, Polygon).
 - [ ] **Fiat on-ramp** — Integrate a fiat-to-HBAR on-ramp provider.
 - [ ] **Passkey / WebAuthn** — Add an alternative biometric path using device passkeys.
+- [ ] **Fixed-point arithmetic** — Replace floating-point balance calculations with Decimal.js for sub-cent precision.
+- [ ] **Circuit breaker** — Add circuit breaker pattern to API calls for cascading failure protection.
 
 ---
 
@@ -450,6 +480,8 @@ Contributions, issues, and feature requests are welcome!
 - Follow the existing ESLint configuration in [`effisend-hedera/eslint.config.js`](effisend-hedera/eslint.config.js).
 - Use functional components with hooks where possible (new screens should follow this pattern).
 - Keep API route handlers in `effisend-hedera/src/app/api/`.
+- Use the typed error classes from `src/core/errors.js` for all error handling.
+- All API routes must validate input and return `{ result, error }` with proper HTTP status codes.
 
 ---
 
@@ -457,17 +489,17 @@ Contributions, issues, and feature requests are welcome!
 
 This project is licensed under the **MIT License** — see the [`LICENSE`](LICENSE) file for details.
 
-Copyright © 2025 Víctor Altamirano
+Copyright 2025 Victor Altamirano
 
 ---
 
 ## Contact / Support
 
-**Maintainer:** Víctor Altamirano
+**Maintainer:** Victor Altamirano
 
-- 🐙 **GitHub:** [@altaga](https://github.com/altaga)
-- 🌐 **Project Repository:** [github.com/altaga/EffiSend-Hedera](https://github.com/altaga/EffiSend-Hedera)
-- 📧 **Email:** _\<ADD CONTACT EMAIL HERE\>_
-- 🚀 **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
+- **GitHub:** [@altaga](https://github.com/altaga)
+- **Project Repository:** [github.com/altaga/EffiSend-Hedera](https://github.com/altaga/EffiSend-Hedera)
+- **Email:** _\<ADD CONTACT EMAIL HERE\>_
+- **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
 
 For questions, bugs, or support, please [open a GitHub issue](https://github.com/altaga/EffiSend-Hedera/issues). Pull requests are always welcome.
