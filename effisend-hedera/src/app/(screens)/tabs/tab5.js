@@ -95,8 +95,9 @@ function Tab5({ navigation, isActive }) {
         const userAddressEVM = addresses[evmChainConfig?.type];
         const hederaAccountId = addresses.hedera;
         const AdapterClass = adapterMap[evmChainConfig?.type];
-        let allMergedNFTs = [];
 
+        // Build EVM fetch promises (don't await yet)
+        let evmPromise = Promise.resolve([]);
         if (AdapterClass && userAddressEVM) {
           const adapter = new AdapterClass(evmChainConfig);
           const fetchPassPromises = PASS_CONTRACTS.map((contract) =>
@@ -127,68 +128,73 @@ function Tab5({ navigation, isActive }) {
               )
               .catch(() => []),
           );
-          const evmResults = await Promise.all([
+          evmPromise = Promise.all([
             ...fetchPassPromises,
             ...fetchPoapPromises,
-          ]);
-          allMergedNFTs = evmResults.flat().filter(Boolean);
+          ]).then((results) => results.flat().filter(Boolean));
         }
 
+        // Build Hedera fetch promises (don't await yet)
+        const fetchHederaCollection = async (collectionId, isPoap) => {
+          try {
+            const hRes = await fetch(
+              `${HEDERA_MIRROR_NODE}/api/v1/accounts/${hederaAccountId}/nfts?token.id=${collectionId}`,
+            );
+            if (hRes.status === 404 || !hRes.ok) return [];
+            const hData = await hRes.json();
+            if (!hData.nfts || hData.nfts.length === 0) return [];
+            const parsedNfts = await Promise.all(
+              hData.nfts.map(async (nft) => {
+                try {
+                  let metadataUrl = decodeBase64(nft.metadata);
+                  if (metadataUrl.startsWith("ipfs://"))
+                    metadataUrl = metadataUrl.replace(
+                      "ipfs://",
+                      "https://ipfs.io/ipfs/",
+                    );
+                  const metaRes = await fetch(metadataUrl);
+                  const metaJSON = await metaRes.json();
+                  let imageUrl = metaJSON.image || "";
+                  if (imageUrl.startsWith("ipfs://"))
+                    imageUrl = imageUrl.replace(
+                      "ipfs://",
+                      "https://ipfs.io/ipfs/",
+                    );
+                  return {
+                    ...metaJSON,
+                    image: imageUrl,
+                    tokenId: nft.serial_number,
+                    contract: nft.token_id,
+                    chain: "hedera",
+                    iconKey: hederaChainConfig?.iconKey || "hedera",
+                    isPoap,
+                  };
+                } catch {
+                  return null;
+                }
+              }),
+            );
+            return parsedNfts.filter(Boolean);
+          } catch {
+            return [];
+          }
+        };
+
+        let hederaPromise = Promise.resolve([]);
         if (hederaAccountId) {
-          const fetchHederaCollection = async (collectionId, isPoap) => {
-            try {
-              const hRes = await fetch(
-                `${HEDERA_MIRROR_NODE}/api/v1/accounts/${hederaAccountId}/nfts?token.id=${collectionId}`,
-              );
-              if (hRes.status === 404 || !hRes.ok) return [];
-              const hData = await hRes.json();
-              if (!hData.nfts || hData.nfts.length === 0) return [];
-              const parsedNfts = await Promise.all(
-                hData.nfts.map(async (nft) => {
-                  try {
-                    let metadataUrl = decodeBase64(nft.metadata);
-                    if (metadataUrl.startsWith("ipfs://"))
-                      metadataUrl = metadataUrl.replace(
-                        "ipfs://",
-                        "https://ipfs.io/ipfs/",
-                      );
-                    const metaRes = await fetch(metadataUrl);
-                    const metaJSON = await metaRes.json();
-                    let imageUrl = metaJSON.image || "";
-                    if (imageUrl.startsWith("ipfs://"))
-                      imageUrl = imageUrl.replace(
-                        "ipfs://",
-                        "https://ipfs.io/ipfs/",
-                      );
-                    return {
-                      ...metaJSON,
-                      image: imageUrl,
-                      tokenId: nft.serial_number,
-                      contract: nft.token_id,
-                      chain: "hedera",
-                      iconKey: hederaChainConfig?.iconKey || "hedera",
-                      isPoap,
-                    };
-                  } catch {
-                    return null;
-                  }
-                }),
-              );
-              return parsedNfts.filter(Boolean);
-            } catch {
-              return [];
-            }
-          };
-          const hederaResults = await Promise.all([
+          hederaPromise = Promise.all([
             ...HEDERA_PASS_COLLECTIONS.map((id) =>
               fetchHederaCollection(id, false),
             ),
             ...HEDERA_POAP_COLLECTIONS.map((id) =>
               fetchHederaCollection(id, true),
             ),
-          ]);
-          allMergedNFTs = [...allMergedNFTs, ...hederaResults.flat()];
+          ]).then((results) => results.flat());
         }
+
+        // Await both chains in parallel
+        const [evmNFTs, hederaNFTs] = await Promise.all([evmPromise, hederaPromise]);
+        const allMergedNFTs = [...evmNFTs, ...hederaNFTs];
 
         if (allMergedNFTs.length !== nftsRef.current?.length) {
           setValue({ nfts: allMergedNFTs });

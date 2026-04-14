@@ -77,7 +77,7 @@ export default function Tab3() {
     } catch {
       return 0;
     }
-  }, [context]);
+  }, [context.value.accountId]);
 
   const getRewards = useCallback(async () => {
     try {
@@ -90,7 +90,7 @@ export default function Tab3() {
     } catch {
       return 0;
     }
-  }, [context]);
+  }, [context.value.accountId]);
 
   const claimRewards = useCallback(async () => {
     try {
@@ -103,7 +103,7 @@ export default function Tab3() {
     } catch {
       return 0;
     }
-  }, [context]);
+  }, [context.value.accountId]);
 
   const getAllocatedRewards = useCallback(async () => {
     const response = await getRewards();
@@ -126,7 +126,7 @@ export default function Tab3() {
       }
     };
     context.value.starter && update();
-  }, [context, getAllocatedRewards, setLoading]);
+  }, [context.value.accountId, context.value.starter, getAllocatedRewards]);
 
   useEffect(() => {
     onMountCheck();

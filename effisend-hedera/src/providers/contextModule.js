@@ -52,11 +52,15 @@ class ContextProvider extends React.Component {
   };
 
   render() {
-    // Update the value ref — methods are already stable (bound arrow functions)
-    this._providerValue = {
-      ...this._providerValue,
-      value: this.state.value,
-    };
+    // Only create a new provider value object when state.value changes.
+    // This prevents consumer re-renders when only parent props change.
+    if (this._providerValue.value !== this.state.value) {
+      this._providerValue = {
+        value: this.state.value,
+        setValue: this.setValue,
+        setValueAsync: this.setValueAsync,
+      };
+    }
 
     return (
       <ContextModule.Provider value={this._providerValue}>
