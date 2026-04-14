@@ -8,6 +8,7 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+import ErrorBoundary from "../components/errorBoundary";
 import ContextLoader from "../providers/contextLoader";
 
 import React from "react";
@@ -31,6 +32,7 @@ export default function RootLayout() {
             // This provider provides metamask connectivity
           }
           <ContextLoader />
+          <ErrorBoundary>
           <Stack
             initialRouteName="(screens)/index"
             screenOptions={{
@@ -55,6 +57,7 @@ export default function RootLayout() {
             }
             <Stack.Screen name="(screens)/receipt" />
           </Stack>
+          </ErrorBoundary>
           <StatusBar style="auto" />
         </ContextProvider>
       </SmartProvider>

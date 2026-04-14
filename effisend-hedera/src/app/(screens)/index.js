@@ -1,9 +1,9 @@
 // Basic Imports
 import { useNavigation } from "expo-router";
 import { useContext, useEffect } from "react";
-import { Image, View } from "react-native";
+import { ActivityIndicator, Image, View } from "react-native";
 import logoSplash from "../../assets/images/splash-iconC.png";
-import GlobalStyles from "../../core/styles";
+import GlobalStyles, { mainColor } from "../../core/styles";
 import ContextModule from "../../providers/contextModule";
 
 export default function SplashLoading() {
@@ -21,7 +21,7 @@ export default function SplashLoading() {
   }, [context.value.accountId, context.value.starter, navigation]);
 
   return (
-    <View style={[GlobalStyles.container, { justifyContent: "center" }]}>
+    <View style={[GlobalStyles.container, { justifyContent: "center", gap: 32 }]}>
       <Image
         resizeMode="contain"
         source={logoSplash}
@@ -30,6 +30,7 @@ export default function SplashLoading() {
           width: "70%",
         }}
       />
+      <ActivityIndicator size="large" color={mainColor} />
     </View>
   );
 }

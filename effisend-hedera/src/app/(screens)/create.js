@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
 import CamFace from "../../components/camFace";
+import { AuthError, getUserMessage } from "../../core/errors";
 import GlobalStyles, { mainColor, secondaryColor } from "../../core/styles";
 import { useStateAsync } from "../../core/useAsyncState";
 import {
@@ -79,9 +80,10 @@ export default function CreateOrRecover() {
     const { result: faceResult } = await createOrFetchFace(image, nonce);
     if (faceResult === null) {
       setLoading(false);
+      const authErr = new AuthError("Face recognition failed", { step: "createOrFetchFace" });
       Toast.show({
         type: "error",
-        text1: "Face recognition failed",
+        text1: getUserMessage(authErr),
         text2: "Please try again with better lighting",
         position: "bottom",
         visibilityTime: 4000,
@@ -110,7 +112,7 @@ export default function CreateOrRecover() {
         }
       } else if (typeof faceResult === "boolean" && faceResult === true) {
         const { result: walletResult } = await createOrFetchWallet(nonce);
-        console.log(walletResult);
+        // Wallet created
         if (walletResult !== null) {
           const { user, accountId } = walletResult;
           await setEncryptedStorageValue({ user });

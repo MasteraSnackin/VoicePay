@@ -6,7 +6,6 @@ export default function ContextLoader() {
   const context = useContext(ContextModule);
   const checkStarter = useCallback(async () => {
     const accountId = await getAsyncStorageValue("accountId");
-    console.log(accountId);
     if (accountId === null) {
       context.setValue({
         starter: true,

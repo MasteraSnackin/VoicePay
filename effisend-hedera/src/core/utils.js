@@ -104,18 +104,14 @@ export function findIndexByProperty(array, property, value) {
 
 export function removeDuplicatesByKey(arr, key) {
   const seen = new Set();
-
-  return arr
-    .slice()
-    .reverse() // Reverse the array
-    .filter((item) => {
-      if (seen.has(item[key])) {
-        return false; // Skip if the value has already been seen
-      }
-      seen.add(item[key]);
-      return true; // Keep the item if it's the first time the value is encountered
-    })
-    .reverse(); // Reverse it back to original order
+  const result = [];
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (!seen.has(arr[i][key])) {
+      seen.add(arr[i][key]);
+      result.push(arr[i]);
+    }
+  }
+  return result.reverse();
 }
 
 export function randomNumber(min, max) {
@@ -215,7 +211,7 @@ export function rgbaToHex(r, g, b, alphaPercent) {
 
 export function formatTimestamp(unixTimestamp) {
   const now = new Date();
-  const messageDate = new Date(unixTimestamp * 1000); // Convert from seconds to milliseconds
+  const messageDate = new Date(unixTimestamp);
 
   const diffMs = now - messageDate;
   const diffMinutes = Math.floor(diffMs / (1000 * 60));

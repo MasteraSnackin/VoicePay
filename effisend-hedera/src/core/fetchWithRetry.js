@@ -2,9 +2,11 @@ import { fetch } from "expo/fetch";
 
 export async function fetchWithRetries(url, options = {}, retryOptions = {}) {
   const {
-    retries = 10,
-    delay = 3000, // 3 seconds
+    retries = 3,
+    delay = 1000,
     backoff = 2,
+    maxDelay = 15000,
+    timeout = 10000,
     nullOnStatuses = [],
   } = retryOptions;
 
@@ -13,7 +15,10 @@ export async function fetchWithRetries(url, options = {}, retryOptions = {}) {
 
   while (attempts < retries) {
     try {
-      const response = await fetch(url, options);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         return response; // Success!
@@ -40,8 +45,9 @@ export async function fetchWithRetries(url, options = {}, retryOptions = {}) {
 
       if (attempts < retries) {
         console.log(`Retrying in ${currentDelay}ms...`);
+        const jitter = 1 + Math.random() * 0.1;
         await new Promise((resolve) => setTimeout(resolve, currentDelay));
-        currentDelay *= backoff;
+        currentDelay = Math.min(currentDelay * backoff * jitter, maxDelay);
       } else {
         throw new Error(
           `Failed to fetch ${url} after ${retries} attempts. Last error: ${errorMessage}`

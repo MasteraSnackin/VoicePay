@@ -138,7 +138,7 @@ export default function Tab3() {
   const onMountCheck = useCallback(async () => {
     const update = async () => {
       if (context.value.accountId !== "") {
-        console.log("update");
+        // Initialize rewards data
         setLoading(true);
         await getAllocatedRewards();
         setLoading(false);

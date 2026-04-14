@@ -76,15 +76,10 @@ class Tab1 extends Component {
         // Get Last Refresh
         const lastRefresh = await this.getlastRefresh();
         if (Date.now() - lastRefresh >= refreshTime) {
-          console.log("Refreshing...");
           await setAsyncStorageValue({ lastRefresh: Date.now() });
           this.refresh();
         } else {
-          console.log(
-            `Next refresh Available: ${Math.round(
-              (refreshTime - (Date.now() - lastRefresh)) / 1000
-            )} Seconds`
-          );
+          // Next refresh not yet available
         }
       }
     }, 1000);
@@ -119,8 +114,8 @@ class Tab1 extends Component {
     await this.setStateAsync({ refreshing: true });
     try {
       await Promise.all([this.getUSD(), this.getBalance()]);
-    } catch (e) {
-      console.log(e);
+    } catch (_e) {
+      Toast.error("Failed to refresh balances. Pull down to retry.");
     }
     await this.setStateAsync({ refreshing: false });
   }

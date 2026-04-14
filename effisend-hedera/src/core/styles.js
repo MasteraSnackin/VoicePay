@@ -120,8 +120,9 @@ const GlobalStyles = StyleSheet.create({
     height: footer,
     display: "flex",
     flexDirection: "row",
-    borderTopWidth: 0,
-    borderTopColor: mainColor,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.08)",
+    backgroundColor: "rgba(26, 26, 26, 0.85)",
     justifyContent: "space-between",
   },
   // Header Layout

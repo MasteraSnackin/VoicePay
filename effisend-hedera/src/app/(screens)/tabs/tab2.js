@@ -15,6 +15,7 @@ import checkMark from "../../../assets/images/checkMark.png";
 import CamFace from "../../../components/camFace";
 import CamQR from "../../../components/camQR";
 import { blockchain } from "../../../core/constants";
+import { NetworkError, TransactionError, getUserMessage } from "../../../core/errors";
 import GlobalStyles, {
   fontSize as fontSizeTokens,
   mainColor,
@@ -149,12 +150,12 @@ class Tab2 extends Component {
           Toast.success("Payment completed successfully");
         } else {
           await this.setStateAsync({ loading: false });
-          Toast.error("Payment failed. Please try again.");
+          Toast.error(getUserMessage(new TransactionError("Payment rejected by server")));
         }
       })
       .catch(async () => {
         await this.setStateAsync({ loading: false });
-        Toast.error("Network error. Check your connection.");
+        Toast.error(getUserMessage(new NetworkError()));
       });
   }
 
@@ -229,7 +230,7 @@ class Tab2 extends Component {
 
   async getBalances() {
     const { result } = await this.hederaGetBalance();
-    console.log(result);
+    // Balance fetched
     const balances = blockchain.tokens.map((token, index) => {
       if (index === 0) {
         return parseFloat(result.hbar);
@@ -421,9 +422,15 @@ class Tab2 extends Component {
                 }}
               />
             </View>
-            <View
-              key={"This element its only to align the QR reader in center"}
-            />
+            <Pressable
+              disabled={this.state.loading}
+              style={[GlobalStyles.buttonCancelStyle, { width: "90%" }]}
+              onPress={() => this.setState(BaseStateTab2)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel and go back"
+            >
+              <Text style={GlobalStyles.buttonCancelText}>Cancel</Text>
+            </Pressable>
           </Fragment>
         )}
         {this.state.stage === 1 && this.state.kindPayment === 1 && (
@@ -494,6 +501,15 @@ class Tab2 extends Component {
                 {this.state.loading ? "Processing..." : "Take Picture"}
               </Text>
             </Pressable>
+            <Pressable
+              disabled={this.state.loading}
+              style={[GlobalStyles.buttonCancelStyle]}
+              onPress={() => this.setState(BaseStateTab2)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel and go back"
+            >
+              <Text style={GlobalStyles.buttonCancelText}>Cancel</Text>
+            </Pressable>
           </Fragment>
         )}
         {this.state.stage === 2 && (
@@ -510,6 +526,15 @@ class Tab2 extends Component {
             <Text style={[GlobalStyles.titlePaymentToken]}>
               Select Payment Token
             </Text>
+            <Pressable
+              disabled={this.state.loading}
+              style={[GlobalStyles.buttonCancelStyle, { width: "90%", marginBottom: 16 }]}
+              onPress={() => this.setState(BaseStateTab2)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel payment"
+            >
+              <Text style={GlobalStyles.buttonCancelText}>Cancel</Text>
+            </Pressable>
             <View style={{ width: "90%", flex: 1 }}>
               {blockchain.tokens.map((token, i) =>
                 this.state.activeTokens[i] ? (
