@@ -164,8 +164,9 @@ export default function Tab3() {
       await getAllocatedRewards();
     } catch {
       Toast.error("Network error while claiming rewards.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
   return (
     <Fragment>

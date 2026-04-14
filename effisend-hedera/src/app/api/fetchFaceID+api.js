@@ -22,8 +22,17 @@ async function fetchFaceID(body) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const { result } = await fetchFaceID(body);
-  console.log(result);
-  return Response.json({ result });
+  try {
+    const body = await request.json();
+    if (!body.image) {
+      return Response.json({ result: null, error: "Missing image data" }, { status: 400 });
+    }
+    const response = await fetchFaceID(body);
+    if (response === null) {
+      return Response.json({ result: null, error: "Face ID lookup failed" }, { status: 502 });
+    }
+    return Response.json({ result: response.result ?? null, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

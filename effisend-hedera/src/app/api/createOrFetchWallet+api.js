@@ -19,8 +19,17 @@ async function createOrFetchWallet(body) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const { result } = await createOrFetchWallet(body);
-  console.log(result);
-  return Response.json({ result });
+  try {
+    const body = await request.json();
+    if (!body.user) {
+      return Response.json({ result: null, error: "Missing user identifier" }, { status: 400 });
+    }
+    const response = await createOrFetchWallet(body);
+    if (response === null) {
+      return Response.json({ result: null, error: "Wallet creation failed" }, { status: 502 });
+    }
+    return Response.json({ result: response.result ?? null, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

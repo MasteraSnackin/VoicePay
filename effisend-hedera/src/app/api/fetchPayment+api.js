@@ -19,17 +19,17 @@ async function fetchPayment(jsonBody) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  if (Object.keys(body).indexOf("nonce") > -1) {
-    const {result} = await fetchPayment(body);
-    console.log(result);
-    return Response.json({ result });
-  } else if (Object.keys(body).indexOf("user") > -1) {
-    const {result} = await fetchPayment(body);
-    console.log(result);
-    return Response.json({ result });
-  } else {
-    console.log("error");
-    return Response.json({ result: null });
+  try {
+    const body = await request.json();
+    if (!body.nonce && !body.user) {
+      return Response.json({ result: null, error: "Missing nonce or user" }, { status: 400 });
+    }
+    const response = await fetchPayment(body);
+    if (response === null) {
+      return Response.json({ result: null, error: "Payment fetch failed" }, { status: 502 });
+    }
+    return Response.json({ result: response.result ?? null, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
   }
 }

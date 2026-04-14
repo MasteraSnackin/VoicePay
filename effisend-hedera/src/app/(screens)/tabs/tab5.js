@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { Toast } from "toastify-react-native";
 import {
     useCallback,
     useContext,
@@ -201,8 +202,8 @@ function Tab5({ navigation, isActive }) {
           nfts: allMergedNFTs,
           lastRefreshNFTs: Date.now(),
         });
-      } catch (err) {
-        console.error("Total Fetch Error:", err);
+      } catch (_err) {
+        Toast.error("Failed to load passes. Pull down to retry.");
       } finally {
         setLoading(false);
         isRefreshingRef.current = false;

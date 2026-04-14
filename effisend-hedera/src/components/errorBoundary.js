@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { mainColor } from "../core/styles";
+import { getUserMessage } from "../core/errors";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -24,7 +25,7 @@ export default class ErrorBoundary extends React.Component {
           <Ionicons name="warning-outline" size={48} color="#EF4444" />
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
-            {this.state.error?.message || "An unexpected error occurred."}
+            {getUserMessage(this.state.error)}
           </Text>
           <Pressable
             style={styles.button}

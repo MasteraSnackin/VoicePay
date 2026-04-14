@@ -19,8 +19,17 @@ async function createPayment(body) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const result = await createPayment(body);
-  console.log(result);
-  return Response.json({ result });
+  try {
+    const body = await request.json();
+    if (!body.nonce || !body.user) {
+      return Response.json({ result: null, error: "Missing required fields" }, { status: 400 });
+    }
+    const result = await createPayment(body);
+    if (result === null) {
+      return Response.json({ result: null, error: "Payment creation failed" }, { status: 502 });
+    }
+    return Response.json({ result, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

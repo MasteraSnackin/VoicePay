@@ -19,8 +19,17 @@ async function executePayment(jsonBody) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const {result, error} = await executePayment(body);
-  console.log(result);
-  return Response.json({result, error});
+  try {
+    const body = await request.json();
+    if (!body.user || !body.to || body.amount === undefined) {
+      return Response.json({ result: null, error: "Missing required fields" }, { status: 400 });
+    }
+    const response = await executePayment(body);
+    if (response === null) {
+      return Response.json({ result: null, error: "Payment execution failed" }, { status: 502 });
+    }
+    return Response.json({ result: response.result ?? null, error: response.error ?? null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

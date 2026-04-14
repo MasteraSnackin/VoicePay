@@ -17,8 +17,17 @@ async function hederaGetBalance(body) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const result = await hederaGetBalance(body);
-  console.log(result);
-  return Response.json({ result });
+  try {
+    const body = await request.json();
+    if (!body.accountId) {
+      return Response.json({ result: null, error: "Missing accountId" }, { status: 400 });
+    }
+    const result = await hederaGetBalance(body);
+    if (result === null) {
+      return Response.json({ result: null, error: "Balance fetch failed" }, { status: 502 });
+    }
+    return Response.json({ result, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

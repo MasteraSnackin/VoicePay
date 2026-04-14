@@ -24,9 +24,15 @@ async function createOrFetchFace(body) {
 }
 
 export async function POST(request) {
-  const body = await request.json();
-  const result = await createOrFetchFace(body);
-  console.log(result);
-  if(result === null) return Response.json({ result: null });
-  return Response.json({ ...result });
+  try {
+    const body = await request.json();
+    if (!body.image || !body.nonce) {
+      return Response.json({ result: null, error: "Missing image or nonce" }, { status: 400 });
+    }
+    const result = await createOrFetchFace(body);
+    if (result === null) return Response.json({ result: null, error: "Face recognition failed" }, { status: 502 });
+    return Response.json({ ...result, error: null });
+  } catch (_e) {
+    return Response.json({ result: null, error: "Invalid request" }, { status: 400 });
+  }
 }

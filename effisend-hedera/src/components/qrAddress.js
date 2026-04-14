@@ -9,7 +9,6 @@ export default class QrAddress extends Component {
 
   componentDidUpdate(prevProps){
     if(prevProps.address !== this.props.address){
-      console.log(this.props.address);
       this.forceUpdate();
     }
   }
