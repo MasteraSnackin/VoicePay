@@ -2,20 +2,21 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 export function useStateAsync(initialValue) {
   const [state, setState] = useState(initialValue);
-  const resolverRef = useRef(null);
+  const resolversRef = useRef([]);
 
   const asyncSetState = useCallback((newValue) => {
-    setState(newValue);
-    return new Promise(resolve => {
-      resolverRef.current = resolve;
+    return new Promise((resolve) => {
+      resolversRef.current.push(resolve);
+      setState(newValue);
     });
   }, []);
 
-  // Resolve the promise after state updates
+  // Resolve all pending promises after state updates
   useEffect(() => {
-    if (resolverRef.current) {
-      resolverRef.current(state);
-      resolverRef.current = null;
+    if (resolversRef.current.length > 0) {
+      const pending = resolversRef.current;
+      resolversRef.current = [];
+      pending.forEach((resolve) => resolve(state));
     }
   }, [state]);
 

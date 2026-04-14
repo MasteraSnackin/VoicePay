@@ -72,15 +72,10 @@ class Tab2 extends Component {
 
   static contextType = ContextModule;
 
-  async getDataURL() {
-    return new Promise(async (resolve, reject) => {
-      this.svg.toDataURL(async (data) => {
-        this.setState(
-          {
-            saveData: data,
-          },
-          () => resolve("ok")
-        );
+  getDataURL() {
+    return new Promise((resolve) => {
+      this.svg.toDataURL((data) => {
+        this.setState({ saveData: data }, () => resolve("ok"));
       });
     });
   }

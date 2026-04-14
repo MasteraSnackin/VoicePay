@@ -25,10 +25,7 @@ export async function fetchWithRetries(url, options = {}, retryOptions = {}) {
       }
 
       if (nullOnStatuses.includes(response.status)) {
-        console.warn(
-          `Request failed with non-retryable status ${response.status}. Returning null.`
-        );
-        return { result: null };
+        return null;
       }
 
       console.warn(
@@ -56,5 +53,5 @@ export async function fetchWithRetries(url, options = {}, retryOptions = {}) {
     }
   }
 
-  return { result: null };
+  return null;
 }

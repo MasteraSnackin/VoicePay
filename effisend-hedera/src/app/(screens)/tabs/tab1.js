@@ -155,7 +155,7 @@ class Tab1 extends Component {
         }
       }
     });
-    setAsyncStorageValue({ balances });
+    await setAsyncStorageValue({ balances });
     this.context.setValue({ balances });
   }
 
