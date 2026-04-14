@@ -135,9 +135,15 @@ export default function CreateOrRecover() {
             height: "auto",
             width: "90%",
             borderColor: loading ? mainColor : secondaryColor,
-            borderWidth: 5,
-            borderRadius: 10,
+            borderWidth: 3,
+            borderRadius: 16,
             aspectRatio: 1,
+            overflow: "hidden",
+            shadowColor: loading ? mainColor : secondaryColor,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.3,
+            shadowRadius: 12,
+            elevation: 6,
           }}
         >
           <CamFace
