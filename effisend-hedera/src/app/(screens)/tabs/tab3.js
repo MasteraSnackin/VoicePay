@@ -125,14 +125,14 @@ export default function Tab3() {
   }, [context]);
 
   const getAllocatedRewards = useCallback(async () => {
-    const { result } = await getRewards();
+    const response = await getRewards();
     const claimCounter = await getNonceForAccountId();
     if (claimCounter > 100) {
       setTrustScore(100);
     } else {
       setTrustScore(claimCounter);
     }
-    setRewardPoints(result.rewards);
+    setRewardPoints(response?.result?.rewards ?? 0);
   }, [setRewardPoints, setTrustScore, getRewards, getNonceForAccountId]);
 
   const onMountCheck = useCallback(async () => {

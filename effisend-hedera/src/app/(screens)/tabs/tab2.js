@@ -67,6 +67,7 @@ class Tab2 extends Component {
     this.state = BaseStateTab2;
     this.controller = new AbortController();
     this.svg = null;
+    this._isMounted = false;
   }
 
   static contextType = ContextModule;
@@ -103,7 +104,7 @@ class Tab2 extends Component {
       fetch(`/api/encrypt`, requestOptions)
         .then((response) => response.json())
         .then((result) => resolve(result))
-        .catch((error) => console.error(error));
+        .catch(() => resolve(null));
     });
   }
 
@@ -117,7 +118,13 @@ class Tab2 extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     this.setState(BaseStateTab2);
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+    this.controller.abort();
   }
 
   async payFromAnySource(i) {
@@ -140,7 +147,8 @@ class Tab2 extends Component {
     fetch(`/api/executePayment`, requestOptions)
       .then((response) => response.json())
       .then(async (result) => {
-        if (result.error === null) {
+        if (!this._isMounted) return;
+        if (result.error === null && result.result) {
           await this.setStateAsync({
             status: "Confirmed",
             loading: false,
@@ -154,6 +162,7 @@ class Tab2 extends Component {
         }
       })
       .catch(async () => {
+        if (!this._isMounted) return;
         await this.setStateAsync({ loading: false });
         Toast.error(getUserMessage(new NetworkError()));
       });
@@ -184,7 +193,7 @@ class Tab2 extends Component {
       fetch("/api/fetchPayment", requestOptions)
         .then((response) => response.json())
         .then((result) => resolve(result))
-        .catch((error) => console.error(error));
+        .catch(() => resolve({ result: null, error: "NETWORK_ERROR" }));
     });
   }
 
@@ -230,7 +239,7 @@ class Tab2 extends Component {
 
   async getBalances() {
     const { result } = await this.hederaGetBalance();
-    // Balance fetched
+    if (!result) return;
     const balances = blockchain.tokens.map((token, index) => {
       if (index === 0) {
         return parseFloat(result.hbar);

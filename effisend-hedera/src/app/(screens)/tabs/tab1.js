@@ -48,6 +48,7 @@ class Tab1 extends Component {
     this.state = baseTab1State;
     this.EventEmitter = new NativeEventEmitter();
     this.controller = new AbortController();
+    this._isMounted = false;
   }
 
   static contextType = ContextModule;
@@ -64,10 +65,13 @@ class Tab1 extends Component {
   }
 
   async componentDidMount() {
+    this._isMounted = true;
     setTimeout(async () => {
+      if (!this._isMounted) return;
       if (this.context.value.accountId !== "") {
         // Event Emitter
         this.EventEmitter.addListener("refresh", async () => {
+          if (!this._isMounted) return;
           Keyboard.dismiss();
           await this.setStateAsync(baseTab1State);
           await setAsyncStorageValue({ lastRefresh: Date.now() });
@@ -87,6 +91,8 @@ class Tab1 extends Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+    this.controller.abort();
     this.EventEmitter.removeAllListeners("refresh");
   }
 
@@ -142,6 +148,7 @@ class Tab1 extends Component {
 
   async getBalance() {
     const { result } = await this.hederaGetBalance();
+    if (!result) return;
     const balances = blockchain.tokens.map((token, index) => {
       if (index === 0) {
         return parseFloat(result.hbar);
