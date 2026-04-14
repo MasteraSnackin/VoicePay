@@ -112,7 +112,7 @@ class Tab1 extends Component {
     );
     const result = await response.json();
     const usdConversion = array.map((x) => result[x]?.usd ?? 0);
-    setAsyncStorageValue({ usdConversion });
+    await setAsyncStorageValue({ usdConversion });
     this.context.setValue({ usdConversion });
   }
 

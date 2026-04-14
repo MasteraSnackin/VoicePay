@@ -80,45 +80,29 @@ export default function Tab3() {
   }, [context]);
 
   const getRewards = useCallback(async () => {
-    return new Promise((resolve) => {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      const raw = JSON.stringify({
-        accountId: context.value.accountId,
-      });
-      const requestOptions = {
+    try {
+      const response = await fetch(`/api/getRewards`, {
         method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      fetch(`/api/getRewards`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve(0));
-    });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: context.value.accountId }),
+      });
+      return await response.json();
+    } catch {
+      return 0;
+    }
   }, [context]);
 
   const claimRewards = useCallback(async () => {
-    return new Promise((resolve) => {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      const raw = JSON.stringify({
-        accountId: context.value.accountId,
-      });
-      const requestOptions = {
+    try {
+      const response = await fetch(`/api/claimRewards`, {
         method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-
-      fetch(`/api/claimRewards`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve(0));
-    });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: context.value.accountId }),
+      });
+      return await response.json();
+    } catch {
+      return 0;
+    }
   }, [context]);
 
   const getAllocatedRewards = useCallback(async () => {
