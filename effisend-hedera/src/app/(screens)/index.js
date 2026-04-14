@@ -18,7 +18,7 @@ export default function SplashLoading() {
       }
     };
     context.value.starter && update();
-  }, [context.value.accountId, context.value.starter]);
+  }, [context.value.accountId, context.value.starter, navigation]);
 
   return (
     <View style={[GlobalStyles.container, { justifyContent: "center" }]}>

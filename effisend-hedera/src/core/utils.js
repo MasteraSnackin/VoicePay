@@ -161,7 +161,7 @@ export function verifyWallet(hexString) {
   try {
     const publicKey = hexString;
     return publicKey.length === 42;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

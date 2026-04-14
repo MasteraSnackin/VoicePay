@@ -13,7 +13,7 @@ import {
 } from "../../core/utils";
 import ContextModule from "../../providers/contextModule";
 
-export default function createOrRecover() {
+export default function CreateOrRecover() {
   const [loading, setLoading] = useState(false);
   const [take, setTake] = useStateAsync(false);
   const navigation = useNavigation();
@@ -28,7 +28,7 @@ export default function createOrRecover() {
       }
     };
     context.value.starter && update();
-  }, [context.value.accountId, context.value.starter]);
+  }, [context.value.accountId, context.value.starter, navigation]);
 
   // Functions
   const createOrFetchFace = useCallback(async (image, nonce) => {
@@ -131,7 +131,7 @@ export default function createOrRecover() {
       }
     }
     setLoading(false);
-  }, []);
+  }, [context, createOrFetchFace, createOrFetchWallet, navigation]);
 
   return (
     <SafeAreaView style={[GlobalStyles.container]}>

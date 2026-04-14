@@ -1,7 +1,7 @@
 import { Image, View } from "react-native";
 import Renders from "../assets/images/logo.png";
 import Title from "../assets/images/title.png";
-import GlobalStyles, { header } from "../core/styles";
+import GlobalStyles from "../core/styles";
 
 export default function Header() {
   return (

@@ -15,7 +15,7 @@ export default class CamFace extends Component {
       facing: this.props.facing,
     };
     this.data = createRef(null);
-    this.camera;
+    this.camera = null;
   }
 
   async takePicture() {

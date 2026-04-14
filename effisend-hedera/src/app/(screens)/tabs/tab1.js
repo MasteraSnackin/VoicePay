@@ -28,7 +28,7 @@ import {
   normalizeFontSize,
   setAsyncStorageValue,
 } from "../../../core/utils";
-import { useHOCS } from "../../../hocs/useHOCS";
+import { withHOCS } from "../../../hocs/useHOCS";
 import ContextModule from "../../../providers/contextModule";
 
 const baseTab1State = {
@@ -57,7 +57,7 @@ class Tab1 extends Component {
       const lastRefresh = await getAsyncStorageValue("lastRefresh");
       if (lastRefresh === null) throw "Set First Date";
       return lastRefresh;
-    } catch (err) {
+    } catch (_err) {
       await setAsyncStorageValue({ lastRefresh: 0 });
       return 0;
     }
@@ -97,9 +97,9 @@ class Tab1 extends Component {
 
   async getUSD() {
     const array = blockchain.tokens.map((token) => token.coingecko);
-    var myHeaders = new Headers();
+    const myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
-    var requestOptions = {
+    const requestOptions = {
       signal: this.controller.signal,
       method: "GET",
       headers: myHeaders,
@@ -155,7 +155,7 @@ class Tab1 extends Component {
           return parseFloat(
             formatUnits(result.tokens[token.accountId].low, token.decimals)
           );
-        } catch (e) {
+        } catch (_e) {
           return 0.0;
         }
       }
@@ -501,4 +501,4 @@ class Tab1 extends Component {
   }
 }
 
-export default useHOCS(Tab1);
+export default withHOCS(Tab1);

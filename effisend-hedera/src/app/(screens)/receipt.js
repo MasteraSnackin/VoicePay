@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useGlobalSearchParams } from "expo-router";
 import { Fragment } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { logo } from "../../assets/images/logo";
 import {

@@ -133,7 +133,7 @@ export default function Tab3() {
       setTrustScore(claimCounter);
     }
     setRewardPoints(result.rewards);
-  }, [setRewardPoints, setTrustScore, context]);
+  }, [setRewardPoints, setTrustScore, getRewards, getNonceForAccountId]);
 
   const onMountCheck = useCallback(async () => {
     const update = async () => {
@@ -149,7 +149,7 @@ export default function Tab3() {
 
   useEffect(() => {
     onMountCheck();
-  }, []);
+  }, [onMountCheck]);
 
   const handleRewardPoints = async () => {
     setLoading(true);

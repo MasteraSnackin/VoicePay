@@ -29,12 +29,12 @@ export default function Tab4() {
   const [loading, setLoading] = useState(false);
   const [inputHeight, setInputHeight] = useStateAsync("auto");
 
-  async function chatWithAgent(message) {
+  const chatWithAgent = useCallback(async (msg) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     const user = await getEncryptedStorageValue("user");
     const raw = JSON.stringify({
-      message,
+      message: msg,
       context: {
         accountId: context.value.accountId,
         user,
@@ -53,7 +53,7 @@ export default function Tab4() {
         .then((result) => resolve(result))
         .catch(() => resolve(null));
     });
-  }
+  }, [context.value.accountId]);
 
   function responseModifier(response) {
     let temp = response;
@@ -116,7 +116,7 @@ export default function Tab4() {
     });
     setLoading(false);
     setTimeout(() => scrollView.current.scrollToEnd({ animated: true }), 100);
-  }, [scrollView, context, message, setMessage, setLoading]);
+  }, [scrollView, context, message, setMessage, setLoading, chatWithAgent]);
   
   return (
     <Fragment>

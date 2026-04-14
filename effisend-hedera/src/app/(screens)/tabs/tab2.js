@@ -28,7 +28,7 @@ import {
   rgbaToHex,
   setAsyncStorageValue,
 } from "../../../core/utils";
-import { useHOCS } from "../../../hocs/useHOCS";
+import { withHOCS } from "../../../hocs/useHOCS";
 import ContextModule from "../../../providers/contextModule";
 import { formatUnits } from "ethers";
 
@@ -189,9 +189,9 @@ class Tab2 extends Component {
 
   async getUSD() {
     const array = blockchain.tokens.map((token) => token.coingecko);
-    var myHeaders = new Headers();
+    const myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
-    var requestOptions = {
+    const requestOptions = {
       signal: this.controller.signal,
       method: "GET",
       headers: myHeaders,
@@ -238,7 +238,7 @@ class Tab2 extends Component {
           return parseFloat(
             formatUnits(result.tokens[token.accountId].low, token.decimals)
           );
-        } catch (e) {
+        } catch (_e) {
           return 0.0;
         }
       }
@@ -414,7 +414,7 @@ class Tab2 extends Component {
                       loading: false,
                       stage: 2,
                     });
-                  } catch (error) {
+                  } catch (_error) {
                     Toast.error("Invalid QR code. Please scan again.");
                     this.setState(BaseStateTab2);
                   }
@@ -469,7 +469,7 @@ class Tab2 extends Component {
                       loading: false,
                       stage: 2,
                     });
-                  } catch (error) {
+                  } catch (_error) {
                     Toast.error("FaceID payment failed. Please retry.");
                     this.setState(BaseStateTab2);
                   }
@@ -556,8 +556,7 @@ class Tab2 extends Component {
                             loading: true,
                           });
                           await this.payFromAnySource(i);
-                        } catch (error) {
-                          console.log(error);
+                        } catch (_error) {
                           await this.setStateAsync({ loading: false });
                         }
                               },
@@ -698,4 +697,4 @@ class Tab2 extends Component {
   }
 }
 
-export default useHOCS(Tab2);
+export default withHOCS(Tab2);

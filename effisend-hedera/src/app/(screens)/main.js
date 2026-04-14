@@ -32,7 +32,7 @@ export default function MainComponent() {
       }
     };
     context.value.starter && update();
-  }, [context.value.accountId, context.value.starter, navigation.navigate]);
+  }, [context.value.accountId, context.value.starter, navigation]);
 
   const handleTabPress = (tabIndex) => {
     setTab(tabIndex);

@@ -25,7 +25,7 @@ export default function ContextLoader() {
 
   useEffect(() => {
     checkStarter();
-  }, []);
+  }, [checkStarter]);
 
   return <Fragment />;
 }
