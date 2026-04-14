@@ -7,7 +7,6 @@ const ContextModule = React.createContext();
 // Context Provider Component
 
 class ContextProvider extends React.Component {
-  // define all the values you want to use in the context
   constructor(props) {
     super(props);
     this.state = {
@@ -26,51 +25,42 @@ class ContextProvider extends React.Component {
         ],
       },
     };
+    // Stable provider value — methods bound once, value ref updated in-place
+    this._providerValue = {
+      value: this.state.value,
+      setValue: this.setValue,
+      setValueAsync: this.setValueAsync,
+    };
   }
 
-  setValue = (value, then = () => {}) => {
-    this.setState(
-      {
-        value: {
-          ...this.state.value,
-          ...value,
-        },
-      },
-      () => then()
-    );
+  // Functional updater avoids stale state reads
+  setValue = (value) => {
+    this.setState((prev) => ({
+      value: { ...prev.value, ...value },
+    }));
   };
 
-  setValueAsync = async (value, then = () => {}) => {
-    await new Promise((resolve) =>
+  setValueAsync = (value) => {
+    return new Promise((resolve) =>
       this.setState(
-        {
-          value: {
-            ...this.state.value,
-            ...value,
-          },
-        },
+        (prev) => ({
+          value: { ...prev.value, ...value },
+        }),
         () => resolve()
       )
     );
-    then();
   };
 
   render() {
-    const { children } = this.props;
-    const { value } = this.state;
-    // Fill this object with the methods you want to pass down to the context
-    const { setValue, setValueAsync } = this;
+    // Update the value ref — methods are already stable (bound arrow functions)
+    this._providerValue = {
+      ...this._providerValue,
+      value: this.state.value,
+    };
 
     return (
-      <ContextModule.Provider
-        // Provide all the methods and values defined above
-        value={{
-          value,
-          setValue,
-          setValueAsync,
-        }}
-      >
-        {children}
+      <ContextModule.Provider value={this._providerValue}>
+        {this.props.children}
       </ContextModule.Provider>
     );
   }

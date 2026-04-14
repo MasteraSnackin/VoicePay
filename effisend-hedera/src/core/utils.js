@@ -80,25 +80,16 @@ export function epsilonRound(num, zeros = 4) {
   );
 }
 
-export function findIndexByProperty(array, property, value) {
-  for (let i = 0; i < array.length; i++) {
-    if (array[i][property] === value) {
-      return i;
-    }
-  }
-  return -1; // If not found
-}
-
 export function removeDuplicatesByKey(arr, key) {
   const seen = new Set();
   const result = [];
-  for (let i = arr.length - 1; i >= 0; i--) {
+  for (let i = 0; i < arr.length; i++) {
     if (!seen.has(arr[i][key])) {
       seen.add(arr[i][key]);
       result.push(arr[i]);
     }
   }
-  return result.reverse();
+  return result;
 }
 
 export function randomNumber(min, max) {

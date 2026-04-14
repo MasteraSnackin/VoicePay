@@ -430,13 +430,16 @@ class Tab2 extends Component {
                     const {
                       result: { accountId, user },
                     } = await this.fetchPayment(0, nonce);
+                    if (!this._isMounted) return;
                     await this.setStateAsync({ accountId, user });
                     await Promise.all([this.getUSD(), this.getBalances()]);
+                    if (!this._isMounted) return;
                     await this.setStateAsync({
                       loading: false,
                       stage: 2,
                     });
                   } catch (_error) {
+                    if (!this._isMounted) return;
                     Toast.error("Invalid QR code. Please scan again.");
                     this.setState(BaseStateTab2);
                   }
@@ -488,6 +491,7 @@ class Tab2 extends Component {
                 onImage={async (image) => {
                   try {
                     const { result: user } = await this.fetchFaceID(image);
+                    if (!this._isMounted) return;
                     if (!user) {
                       Toast.error("Face not recognized. Try again.");
                       this.setState(BaseStateTab2);
@@ -496,13 +500,16 @@ class Tab2 extends Component {
                     const {
                       result: { accountId },
                     } = await this.fetchPayment(1, user);
+                    if (!this._isMounted) return;
                     await this.setStateAsync({ accountId, user });
                     await Promise.all([this.getUSD(), this.getBalances()]);
+                    if (!this._isMounted) return;
                     await this.setStateAsync({
                       loading: false,
                       stage: 2,
                     });
                   } catch (_error) {
+                    if (!this._isMounted) return;
                     Toast.error("FaceID payment failed. Please retry.");
                     this.setState(BaseStateTab2);
                   }

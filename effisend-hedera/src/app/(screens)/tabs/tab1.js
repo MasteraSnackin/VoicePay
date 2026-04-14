@@ -189,22 +189,20 @@ class Tab1 extends Component {
   }
 
   async createQR() {
-    this.setState({
-      loading: true,
-    });
-    const bytes = randomBytes(16);
-    const noncePayment = uuidV4(bytes);
-    const { res } = await this.createPayment(noncePayment);
-    if (res === "BAD REQUEST") {
-      await this.setStateAsync({
-        loading: false,
-      });
-      return;
+    this.setState({ loading: true });
+    try {
+      const bytes = randomBytes(16);
+      const noncePayment = uuidV4(bytes);
+      const { res } = await this.createPayment(noncePayment);
+      if (!this._isMounted) return;
+      if (res === "BAD REQUEST") {
+        this.setState({ loading: false });
+        return;
+      }
+      this.setState({ loading: false, qrData: noncePayment });
+    } catch {
+      if (this._isMounted) this.setState({ loading: false });
     }
-    this.setState({
-      loading: false,
-      qrData: noncePayment,
-    });
   }
 
   // Utils
