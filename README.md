@@ -430,7 +430,7 @@ Compiles all 11 static routes and 11 API routes. Current status: **passes clean*
 
 ## Engineering Quality
 
-The codebase has been through 7 systematic engineering protocol passes:
+The codebase has been through 14+ systematic engineering protocol passes:
 
 | Pass | Focus | Result |
 |------|-------|--------|
@@ -439,8 +439,9 @@ The codebase has been through 7 systematic engineering protocol passes:
 | **Error Handling** | API hardening, typed errors, consistent response shapes | 16 files hardened; all API routes validate input and return proper HTTP codes |
 | **Design Lead** | Glass cards, text glow, footer elevation, modern borders | Visual polish across design system and key screens |
 | **Builder** | async/await API routes, parallel fetches, storage perf | 14 files optimized; 2x faster payment flow, 3x faster app startup |
-| **Nerd** | Context memoization, dead code removal, async guards | Eliminated cascade re-renders and unmounted-component warnings |
+| **Nerd** | Context memoization, dead code removal, async guards | Eliminated cascade re-renders; parallel NFT chain fetching; stable callbacks |
 | **Researcher** | Algorithm audit, trust score fix, parallel NFT fetching | 10x faster NFT loading; precision-safe number formatting |
+| **Re-runs** | Each protocol re-run converged to zero issues | All scans return clean on re-run |
 
 ---
 
