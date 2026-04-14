@@ -30,29 +30,20 @@ export default function Tab4() {
   const [inputHeight, setInputHeight] = useStateAsync("auto");
 
   const chatWithAgent = useCallback(async (msg) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const user = await getEncryptedStorageValue("user");
-    const raw = JSON.stringify({
-      message: msg,
-      context: {
-        accountId: context.value.accountId,
-        user,
-      },
-    });
-
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch("/api/chatWithAgent", requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve(null));
-    });
+    try {
+      const user = await getEncryptedStorageValue("user");
+      const response = await fetch("/api/chatWithAgent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          context: { accountId: context.value.accountId, user },
+        }),
+      });
+      return await response.json();
+    } catch {
+      return null;
+    }
   }, [context.value.accountId]);
 
   function responseModifier(response) {

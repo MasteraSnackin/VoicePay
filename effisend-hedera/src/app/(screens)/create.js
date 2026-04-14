@@ -33,44 +33,29 @@ export default function CreateOrRecover() {
 
   // Functions
   const createOrFetchFace = useCallback(async (image, nonce) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      nonce,
-      image,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/createOrFetchFace`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve({ result: null, error: "BAD REQUEST" }));
-    });
+    try {
+      const response = await fetch(`/api/createOrFetchFace`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nonce, image }),
+      });
+      return await response.json();
+    } catch {
+      return { result: null, error: "BAD REQUEST" };
+    }
   }, []);
 
   const createOrFetchWallet = useCallback(async (user) => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    const raw = JSON.stringify({
-      user,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    return new Promise((resolve) => {
-      fetch(`/api/createOrFetchWallet`, requestOptions)
-        .then((response) => response.json())
-        .then((result) => resolve(result))
-        .catch(() => resolve({ result: null, error: "BAD REQUEST" }));
-    });
+    try {
+      const response = await fetch(`/api/createOrFetchWallet`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user }),
+      });
+      return await response.json();
+    } catch {
+      return { result: null, error: "BAD REQUEST" };
+    }
   }, []);
 
   const createWallet = useCallback(async (image) => {
