@@ -1,4 +1,4 @@
-# EffiSend Hedera
+# FacePay
 
 > A biometric-secured, AI-powered crypto payment wallet built on the Hedera network.
 
@@ -13,13 +13,13 @@
 
 ## Description
 
-**EffiSend Hedera** is a cross-platform (iOS, Android, Web) mobile wallet application that enables fast, secure cryptocurrency payments on the **Hedera** network. It combines **Face ID biometric authentication** (powered by AWS Rekognition) with **AWS KMS-custodied keys** to remove the need for seed phrases, making self-custody accessible to everyday users.
+**FacePay** is a cross-platform (iOS, Android, Web) mobile wallet application that enables fast, secure cryptocurrency payments on the **Hedera** network. It combines **Face ID biometric authentication** (powered by AWS Rekognition) with **AWS KMS-custodied keys** to remove the need for seed phrases, making self-custody accessible to everyday users.
 
 The app provides a full-featured DeFi experience: send/receive HBAR and HTS tokens via QR code, scan payment requests, collect NFT POAPs and passes, earn rewards, and get real-time financial assistance from an **AI agent** (LangChain + Ollama) with live Hedera balance awareness.
 
 **Target users:** Mobile-first crypto users, DeFi newcomers who want self-custody without seed phrase complexity, and developers building on the Hedera network.
 
-**Core problem solved:** Traditional wallets require users to manage private keys or seed phrases — a significant UX barrier. EffiSend Hedera replaces this with facial recognition, backed by AWS KMS signing and DynamoDB account storage, providing non-custodial-style security with a Web2-friendly onboarding experience.
+**Core problem solved:** Traditional wallets require users to manage private keys or seed phrases — a significant UX barrier. FacePay replaces this with facial recognition, backed by AWS KMS signing and DynamoDB account storage, providing non-custodial-style security with a Web2-friendly onboarding experience.
 
 ---
 
@@ -82,7 +82,7 @@ The app provides a full-featured DeFi experience: send/receive HBAR and HTS toke
 flowchart LR
   User["Mobile User\n(iOS / Android / Web)"]
 
-  subgraph ExpoApp["EffiSend Hedera App (Expo)"]
+  subgraph ExpoApp["FacePay App (Expo)"]
     UI["React Native UI\n(5 Tabs, 4 Screens)"]
     APIRoutes["Expo API Routes\n(11 endpoints)"]
   end
@@ -140,14 +140,14 @@ For a detailed deep-dive, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/altaga/EffiSend-Hedera.git
-   cd EffiSend-Hedera
+   git clone https://github.com/altaga/FacePay.git
+   cd FacePay
    ```
 
 2. **Install mobile app dependencies**
 
    ```bash
-   cd effisend-hedera
+   cd facepay
    npm install
    ```
 
@@ -170,7 +170,7 @@ For a detailed deep-dive, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 5. **Start the Expo development server**
 
    ```bash
-   cd ../effisend-hedera
+   cd ../facepay
    npx expo start
    ```
 
@@ -185,23 +185,38 @@ For a detailed deep-dive, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Usage
 
+### Local demo mode
+
+```bash
+npm run demo
+```
+
+This launches the Expo web app and the local mock backend together.
+
+Demo flow:
+- Open the local web URL printed in the terminal, usually `http://localhost:8081`
+- On the FaceID screen, click `Try Demo Wallet`
+- Use `Reset Demo` in the header whenever you want to restart the walkthrough
+
+The local demo is self-contained for onboarding, balances, rewards, payments, and AI chat, and it uses seeded fallback data for prices and trust score while running on `localhost`.
+
 ### Running on a device / simulator
 
 ```bash
 # Start for iOS simulator
-cd effisend-hedera && npx expo start --ios
+cd facepay && npx expo start --ios
 
 # Start for Android emulator
-cd effisend-hedera && npx expo start --android
+cd facepay && npx expo start --android
 
 # Start for web browser
-cd effisend-hedera && npx expo start --web
+cd facepay && npx expo start --web
 ```
 
 ### Building for production (web)
 
 ```bash
-cd effisend-hedera
+cd facepay
 npx expo export -p web && eas deploy --prod
 ```
 
@@ -235,7 +250,7 @@ Agent: Preparing transfer of 5 HBAR to account 0.0.99999...
 
 ## Configuration
 
-All environment variables are defined in [`effisend-hedera/.env`](effisend-hedera/.env).
+All environment variables are defined in [`facepay/.env`](facepay/.env).
 
 | Variable | Description | Example |
 |---|---|---|
@@ -400,16 +415,16 @@ Sends a message to the LangGraph AI agent with account context.
 ### Lint
 
 ```bash
-cd effisend-hedera
+cd facepay
 npm run lint
 ```
 
-Runs ESLint with the [Expo ESLint config](effisend-hedera/eslint.config.js). Current status: **0 errors, 4 warnings** (all pre-existing `import/no-named-as-default-member` style warnings).
+Runs ESLint with the [Expo ESLint config](facepay/eslint.config.js). Current status: **0 errors, 4 warnings** (all pre-existing `import/no-named-as-default-member` style warnings).
 
 ### Build Verification
 
 ```bash
-cd effisend-hedera
+cd facepay
 npx expo export --platform web
 ```
 
@@ -424,7 +439,7 @@ Compiles all 11 static routes and 11 API routes. Current status: **passes clean*
 - [ ] AI agent responds with correct account balance.
 - [ ] Transaction receipt renders with dark theme and glassmorphism card.
 - [ ] NFT gallery loads passes from Hedera Mirror Node.
-- [ ] Trust score and rewards display on EffiSend ID tab.
+- [ ] Trust score and rewards display on FacePay ID tab.
 
 ---
 
@@ -474,13 +489,13 @@ Contributions, issues, and feature requests are welcome!
    ```
 3. **Push** to your branch and open a **Pull Request** against `main`.
 4. Ensure your code passes `npm run lint` before submitting.
-5. For bug reports or feature requests, please [open an issue](https://github.com/altaga/EffiSend-Hedera/issues).
+5. For bug reports or feature requests, please [open an issue](https://github.com/altaga/FacePay/issues).
 
 ### Code Style
 
-- Follow the existing ESLint configuration in [`effisend-hedera/eslint.config.js`](effisend-hedera/eslint.config.js).
+- Follow the existing ESLint configuration in [`facepay/eslint.config.js`](facepay/eslint.config.js).
 - Use functional components with hooks where possible (new screens should follow this pattern).
-- Keep API route handlers in `effisend-hedera/src/app/api/`.
+- Keep API route handlers in `facepay/src/app/api/`.
 - Use the typed error classes from `src/core/errors.js` for all error handling.
 - All API routes must validate input and return `{ result, error }` with proper HTTP status codes.
 
@@ -499,8 +514,8 @@ Copyright 2025 Victor Altamirano
 **Maintainer:** Victor Altamirano
 
 - **GitHub:** [@altaga](https://github.com/altaga)
-- **Project Repository:** [github.com/altaga/EffiSend-Hedera](https://github.com/altaga/EffiSend-Hedera)
+- **Project Repository:** [github.com/altaga/FacePay](https://github.com/altaga/FacePay)
 - **Email:** _\<ADD CONTACT EMAIL HERE\>_
 - **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
 
-For questions, bugs, or support, please [open a GitHub issue](https://github.com/altaga/EffiSend-Hedera/issues). Pull requests are always welcome.
+For questions, bugs, or support, please [open a GitHub issue](https://github.com/altaga/FacePay/issues). Pull requests are always welcome.

@@ -1,0 +1,7 @@
+{
+  "name": "facepay-demo",
+  "private": true,
+  "scripts": {
+    "demo": "node local/run-demo.cjs"
+  }
+}

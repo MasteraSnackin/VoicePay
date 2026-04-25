@@ -1,10 +1,10 @@
-# System Architecture — EffiSend Hedera
+# System Architecture — FacePay
 
 ---
 
 ## Overview
 
-**EffiSend Hedera** is a cross-platform (iOS, Android, Web) mobile wallet application that enables fast, secure cryptocurrency payments on the Hedera Distributed Ledger network. The system is designed to eliminate the traditional seed-phrase barrier to self-custody by replacing private key management with **biometric facial recognition** backed by **AWS Key Management Service (KMS)**.
+**FacePay** is a cross-platform (iOS, Android, Web) mobile wallet application that enables fast, secure cryptocurrency payments on the Hedera Distributed Ledger network. The system is designed to eliminate the traditional seed-phrase barrier to self-custody by replacing private key management with **biometric facial recognition** backed by **AWS Key Management Service (KMS)**.
 
 Users create and recover their wallets using Face ID (powered by AWS Rekognition). Every on-chain transaction is signed by AWS KMS ECDSA keys, so private keys are never exposed to the client. An integrated **AI financial agent** (LangChain + LangGraph + Ollama) provides real-time Hedera balance awareness and conversational payment assistance. The application is built on React Native / Expo and communicates with a serverless AWS backend via a thin Expo API Routes proxy layer.
 
