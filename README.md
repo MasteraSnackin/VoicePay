@@ -21,8 +21,9 @@ The app provides a full-featured DeFi experience: send/receive HBAR and HTS toke
 
 **Core problem solved:** Traditional wallets require users to manage private keys or seed phrases — a significant UX barrier. FacePay replaces this with facial recognition, backed by AWS KMS signing and DynamoDB account storage, providing non-custodial-style security with a Web2-friendly onboarding experience.
 
+<img width="1536" height="1024" alt="8c56abb8-6602-45f0-833b-7b4e8ae38a79" src="https://github.com/user-attachments/assets/7613e2e4-1ef5-45e8-a4e8-348005f2f37c" />
 
-<img width="986" height="1504" alt="62457" src="https://github.com/user-attachments/assets/9de1e340-2557-4de6-9e62-e902f25545f4" />
+
 
 
 ---
