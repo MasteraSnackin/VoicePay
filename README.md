@@ -297,10 +297,6 @@ Update the `TABLE_NAME` constant in [`amazonkms/transaction.js`](amazonkms/trans
 |---|---|---|
 | ![Payment](I) | ![DeSmond](Images/desmond1.png) | ![NFTs](Images/nft1.png) |
 
-| System Architecture |
-|---|
-| ![Architecture](Images/final.drawio.png) |
-
 > **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
 
 ---
