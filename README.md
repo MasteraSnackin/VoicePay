@@ -290,7 +290,7 @@ Update the `TABLE_NAME` constant in [`amazonkms/transaction.js`](amazonkms/trans
 
 | Payment Flow | AI Agent Chat | NFT Gallery |
 |---|---|---|
-| ![Payment](Images/payment3.png) | ![DeSmond](Images/desmond1.png) | ![NFTs](Images/nft1.png) |
+| ![Payment](I) | ![DeSmond](Images/desmond1.png) | ![NFTs](Images/nft1.png) |
 
 | System Architecture |
 |---|
