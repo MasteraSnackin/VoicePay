@@ -286,7 +286,7 @@ Update the `TABLE_NAME` constant in [`amazonkms/transaction.js`](amazonkms/trans
 
 | Face ID Onboarding | Wallet Dashboard | QR Payment |
 |---|---|---|
-| ![Face ID](Images/face1.png) | ![Wallet](Images/wallet1.png) | ![Payment](Images/payment1.png) |
+| ![Face ID]() | ![Wallet](Images/wallet1.png) | ![Payment](Images/payment1.png) |
 
 | Payment Flow | AI Agent Chat | NFT Gallery |
 |---|---|---|
@@ -505,17 +505,14 @@ Contributions, issues, and feature requests are welcome!
 
 This project is licensed under the **MIT License** — see the [`LICENSE`](LICENSE) file for details.
 
-Copyright 2025 Victor Altamirano
+Copyright 2025
 
 ---
 
 ## Contact / Support
 
-**Maintainer:** Victor Altamirano
+**Maintainer:** Masterasnackin
 
-- **GitHub:** [@altaga](https://github.com/altaga)
-- **Project Repository:** [github.com/altaga/FacePay](https://github.com/altaga/FacePay)
-- **Email:** _\<ADD CONTACT EMAIL HERE\>_
-- **Live Demo:** _\<ADD DEPLOYMENT URL HERE\>_
-
+- **GitHub:** [@masterasnackin](https://github.com/masterasnackin)
+- **Project Repository:** [github.com/altaga/FacePay](https://github.com/masterasnackin
 For questions, bugs, or support, please [open a GitHub issue](https://github.com/altaga/FacePay/issues). Pull requests are always welcome.
